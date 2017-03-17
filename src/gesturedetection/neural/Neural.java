@@ -1,11 +1,7 @@
 package gesturedetection.neural;
 
 import org.neuroph.core.NeuralNetwork;
-import org.neuroph.core.data.DataSet;
 
-/**
- * Created by Carbon Studios on 29.01.2017.
- */
 public class Neural {
     private static final String NETWORK_PATH = "c:/studia/AAATUTATUTA/NewNeuralNetwork3.nnet";
 

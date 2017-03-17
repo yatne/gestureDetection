@@ -2,9 +2,6 @@ package gesturedetection.data;
 
 import java.util.HashMap;
 
-/**
- * Created by Carbon Studios on 15.03.2017.
- */
 public class GestureFrame {
     private HashMap<Integer, GesturePoint> joints;
 

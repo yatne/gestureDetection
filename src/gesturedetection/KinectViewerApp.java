@@ -29,16 +29,8 @@ public class KinectViewerApp extends DWApp implements ChangeListener {
     private JButton captureRestAvgButon;
 
     public void GUIsetup(JPanel p_root) {
-
-
-        if (System.getProperty("os.arch").toLowerCase().indexOf("64") < 0) {
-            if (DWApp.showConfirmDialog("Performance Warning", "<html><center><br>WARNING: You are running a 32bit version of Java.<br>This may reduce significantly the performance of this application.<br>It is strongly adviced to exit this program and install a 64bit version of Java.<br><br>Do you want to exit now?</center>"))
-                System.exit(0);
-        }
-
         setLoadingProgress("Uruchamianie", 20);
         myKinect = new Kinect();
-
 
         if (!myKinect.start(Kinect.DEPTH | Kinect.COLOR | Kinect.SKELETON | Kinect.XYZ | Kinect.PLAYER_INDEX)) {
             DWApp.showErrorDialog("ERROR", "Błąd podłączenia kamery Kinect");
@@ -66,7 +58,6 @@ public class KinectViewerApp extends DWApp implements ChangeListener {
 
         p_root.add(main_panel, BorderLayout.CENTER);
         p_root.add(controls, BorderLayout.SOUTH);
-
     }
 
     public void GUIclosing() {
@@ -76,13 +67,11 @@ public class KinectViewerApp extends DWApp implements ChangeListener {
     private void resetKinect() {
 
         myKinect.stop();
-
         int flags = Kinect.SKELETON;
         flags = flags | Kinect.COLOR;
         flags = flags | Kinect.DEPTH;
         flags = flags | Kinect.XYZ;
         myKinect.updateTextureUsingInfrared(false);
-
         myKinect.start(flags);
         myKinect.computeUV(false);
     }

@@ -6,9 +6,6 @@ import gesturedetection.data.points.PointBuilderInterface;
 import java.util.ArrayList;
 import java.util.List;
 
-/**
- * Created by Carbon Studios on 15.03.2017.
- */
 public class DataRecorder {
     private PointBuilderInterface pointBuilder;
     private Double normalizeLength;

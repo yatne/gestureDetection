@@ -3,9 +3,6 @@ package gesturedetection.data;
 import java.util.ArrayList;
 import java.util.List;
 
-/**
- * Created by Carbon Studios on 15.03.2017.
- */
 public class GestureData {
     private int timeInterval;
     List<GestureFrame> frames;

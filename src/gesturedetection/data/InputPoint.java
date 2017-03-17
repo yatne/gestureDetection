@@ -1,8 +1,5 @@
 package gesturedetection.data;
 
-/**
- * Created by Carbon Studios on 15.03.2017.
- */
 public class InputPoint {
     private int skeletonNode;
     private double x;

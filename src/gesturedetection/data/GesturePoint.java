@@ -1,8 +1,5 @@
 package gesturedetection.data;
 
-/**
- * Created by Carbon Studios on 15.03.2017.
- */
 public class GesturePoint {
     protected double x;
     protected double y;

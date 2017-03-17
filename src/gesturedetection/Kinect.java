@@ -82,20 +82,11 @@ public class Kinect extends J4KSDK {
     @Override
     public void onSkeletonFrameEvent(boolean[] flags, float[] positions, float[] orientations, byte[] state) {
         if (viewer == null || viewer.skeletons == null) return;
-        Skeleton skeleton = null;
+        Skeleton skeleton;
         for (int i = 0; i < getSkeletonCountLimit(); i++) {
             skeleton = Skeleton.getSkeleton(i, flags, positions, orientations, state, this);
             if (skeleton.isTracked()) {
-                //         recorder.record(skeleton);
                 measureRestScenario.takeFrame(skeleton);
-//                if (saveToFile && frame >= FRAME_SLEEP) {
-//                    frame = 0;
-//                    saveLineToFile(skeleton);
-//                }
-//                if (recognise && frame >= FRAME_SLEEP) {
-//                    frame = 0;
-//                    recognise(skeleton);
-//                }
             }
             viewer.skeletons[i] = skeleton;
         }

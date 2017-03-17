@@ -3,9 +3,6 @@ package gesturedetection.data.points;
 import gesturedetection.data.GesturePoint;
 import gesturedetection.data.InputPoint;
 
-/**
- * Created by Carbon Studios on 17.03.2017.
- */
 public class DoubleRelativeGesturePointBuilder implements PointBuilderInterface {
 
     //1st - nowPoint, 2nd relative chest point, 3rd before point
