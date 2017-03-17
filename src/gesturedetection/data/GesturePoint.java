@@ -1,0 +1,43 @@
+package gesturedetection.data;
+
+/**
+ * Created by Carbon Studios on 15.03.2017.
+ */
+public class GesturePoint {
+    protected double x;
+    protected double y;
+    protected double z;
+
+    public GesturePoint() {
+    }
+
+    public double getX() {
+        return x;
+    }
+
+    public void setX(double x) {
+        this.x = x;
+    }
+
+    public double getY() {
+        return y;
+    }
+
+    public void setY(double y) {
+        this.y = y;
+    }
+
+    public double getZ() {
+        return z;
+    }
+
+    public void setZ(double z) {
+        this.z = z;
+    }
+
+    public void add(GesturePoint joint) {
+        this.x = this.x + joint.getX();
+        this.y = this.y + joint.getY();
+        this.z = this.z + joint.getZ();
+    }
+}
