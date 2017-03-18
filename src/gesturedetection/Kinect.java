@@ -6,9 +6,11 @@ import edu.ufl.digitalworlds.j4k.J4KSDK;
 import edu.ufl.digitalworlds.j4k.Skeleton;
 import gesturedetection.common.Constants;
 import gesturedetection.data.DataRecorder;
+import gesturedetection.data.normalizer.EllNormalizer;
 import gesturedetection.data.points.BasicGesturePointBuilder;
 import gesturedetection.neural.Neural;
 import gesturedetection.scenario.MeasureRestingPositionScenario;
+import gesturedetection.scenario.SaveDataToFileScenario;
 import gesturedetection.scenario.Scenario;
 import java.io.BufferedWriter;
 import java.io.File;
@@ -16,34 +18,24 @@ import java.io.FileWriter;
 import java.io.IOException;
 
 public class Kinect extends J4KSDK {
-    private final static String OUTPUT_FILE_PATH = "C:/studia/mgr/out/out";
-    private static int fileNbr = 0;
+
     private Neural neural;
-    private File outputFile;
-    private StringBuffer sbf;
-    private BufferedWriter bwr;
     ViewerPanel3D viewer = null;
     JLabel label = null;
     boolean mask_players = false;
-    private boolean saveToFile = false;
+
     private boolean recognise = false;
     private String state = "nie wiem";
     JLabel stateLabel = null;
 
     DataRecorder recorder = new DataRecorder(new BasicGesturePointBuilder());
+    EllNormalizer normalizer = new EllNormalizer();
     Scenario measureRestScenario = new MeasureRestingPositionScenario(recorder);
-
-    public void maskPlayers(boolean flag) {
-        mask_players = flag;
-    }
+    Scenario saveDataToFileScenario = new SaveDataToFileScenario(recorder);
 
     public Kinect() {
         super();
         neural = new Neural();
-    }
-
-    public Kinect(byte type) {
-        super(type);
     }
 
     public void setViewer(ViewerPanel3D viewer) {
@@ -94,7 +86,7 @@ public class Kinect extends J4KSDK {
 
     private void recognise(Skeleton skeleton) {
         double[] in = new double[51];
-        Double ell = calculateEll(skeleton);
+        Double ell = normalizer.getEll(skeleton);
         int ignored = 0;
         if (ell != null) {
             for (int i = 0; i < Constants.KINECT_JOINT_COUNT; i++) {
@@ -125,31 +117,7 @@ public class Kinect extends J4KSDK {
         stateLabel.setText(state);
     }
 
-    private void saveLineToFile(Skeleton skeleton) {
-        Double ell = calculateEll(skeleton);
-        if (ell != null) {
-            for (int i = 0; i <= 19; i++) {
-                if (i != Skeleton.SPINE_MID && i != Skeleton.FOOT_LEFT && i != Skeleton.FOOT_RIGHT) {
-                    sbf.append(getJointCords(i, skeleton, ell));
-                }
-            }
-            sbf.append(System.getProperty("line.separator"));
-        }
-    }
 
-    private Double calculateEll(Skeleton s) {
-        if (s.isJointTrackedOrInferred(Skeleton.SPINE_MID)) {
-            if (s.isJointTrackedOrInferred(Skeleton.SHOULDER_LEFT) && s.isJointTrackedOrInferred(Skeleton.WRIST_LEFT)) {
-                return calculateDistnce(s.get3DJoint(Skeleton.SHOULDER_LEFT), s.get3DJoint(Skeleton.WRIST_LEFT));
-            } else if (s.isJointTrackedOrInferred(Skeleton.SHOULDER_RIGHT) && s.isJointTrackedOrInferred(Skeleton.WRIST_RIGHT)) {
-                return calculateDistnce(s.get3DJoint(Skeleton.SHOULDER_RIGHT), s.get3DJoint(Skeleton.WRIST_RIGHT));
-            } else {
-                return null;
-            }
-        } else {
-            return null;
-        }
-    }
 
     private double[] getJointCordsArray(int i, Skeleton s, Double ell) {
         if (s.isJointTrackedOrInferred(i)) {
@@ -158,7 +126,6 @@ public class Kinect extends J4KSDK {
             return new double[]{0, 0, 0};
         }
     }
-
 
     private String getJointCords(int i, Skeleton s, Double ell) {
         String st = "";
@@ -179,24 +146,7 @@ public class Kinect extends J4KSDK {
         return joint;
     }
 
-    private double calculateDistnce(double[] p1, double[] p2) {
-        double dx = p1[0] - p2[0];
-        double dy = p1[1] - p2[1];
-        double dz = p1[2] - p2[2];
-        return Math.sqrt(dx * dx + dy * dy + dz * dz);
-    }
 
-
-    public void endAndSave() {
-        saveToFile = false;
-        try {
-            bwr.write(sbf.toString());
-            bwr.flush();
-            bwr.close();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-    }
 
     @Override
     public void onColorFrameEvent(byte[] data) {
@@ -230,23 +180,7 @@ public class Kinect extends J4KSDK {
         viewer.videoTexture.update(getInfraredWidth(), getInfraredHeight(), bgra);
     }
 
-    public boolean isSaveToFile() {
-        return saveToFile;
-    }
 
-    public void setSaveToFile(boolean saveToFile) {
-        this.saveToFile = saveToFile;
-        if (saveToFile) {
-            ++fileNbr;
-            outputFile = new File(OUTPUT_FILE_PATH + fileNbr + ".csv");
-            sbf = new StringBuffer();
-            try {
-                bwr = new BufferedWriter(new FileWriter(outputFile));
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-        }
-    }
 
     public boolean isRecognise() {
         return recognise;

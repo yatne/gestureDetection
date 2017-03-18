@@ -36,7 +36,7 @@ public class KinectViewerApp extends DWApp implements ChangeListener {
             DWApp.showErrorDialog("ERROR", "Błąd podłączenia kamery Kinect");
         }
 
-        captureRestAvgButon = new JButton("Zapisz spoczynek");
+        captureRestAvgButon = new JButton("Kalibracja stanu spoczynkowego");
         captureRestAvgButon.setSelected(false);
         captureRestAvgButon.addActionListener(this);
 
