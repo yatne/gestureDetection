@@ -30,8 +30,8 @@ public class Kinect extends J4KSDK {
 
     DataRecorder recorder = new DataRecorder(new BasicGesturePointBuilder());
     EllNormalizer normalizer = new EllNormalizer();
-    Scenario measureRestScenario = new MeasureRestingPositionScenario(recorder);
-    Scenario saveDataToFileScenario = new SaveDataToFileScenario(recorder);
+    Scenario measureRestScenario = new MeasureRestingPositionScenario(recorder, normalizer);
+    Scenario saveDataToFileScenario = new SaveDataToFileScenario(recorder, normalizer);
 
     public Kinect() {
         super();

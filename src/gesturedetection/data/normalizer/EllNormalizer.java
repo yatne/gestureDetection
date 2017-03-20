@@ -1,12 +1,12 @@
 package gesturedetection.data.normalizer;
 
 import edu.ufl.digitalworlds.j4k.Skeleton;
+import gesturedetection.common.Constants;
+import gesturedetection.data.GestureData;
+import gesturedetection.data.GestureFrame;
 import gesturedetection.data.GesturePoint;
 
-/**
- * Created by Carbon Studios on 18.03.2017.
- */
-public class EllNormalizer {
+public class EllNormalizer extends Normalizer {
     protected static double ell = 0;
 
     public GesturePoint normalizePoint(GesturePoint point) {
@@ -38,6 +38,28 @@ public class EllNormalizer {
         double dy = p1[1] - p2[1];
         double dz = p1[2] - p2[2];
         return Math.sqrt(dx * dx + dy * dy + dz * dz);
+    }
+
+    public void init(Skeleton skeleton) {
+        getEll(skeleton);
+    }
+
+    @Override
+    public GestureFrame normalizeFrame(GestureFrame frame) {
+        for (int i = 0; i < Constants.KINECT_JOINT_COUNT; i++) {
+            if (frame.getJoints().get(i) != null) {
+                frame.getJoints().put(i, normalizePoint(frame.getJoints().get(i)));
+            }
+        }
+        return frame;
+    }
+
+    @Override
+    public GestureData normalizeData(GestureData data) {
+        for (GestureFrame gestureFrame : data.getFrames()) {
+            normalizeFrame(gestureFrame);
+        }
+        return data;
     }
 }
 

@@ -6,6 +6,7 @@ import gesturedetection.data.DataRecorder;
 import gesturedetection.data.GestureData;
 import gesturedetection.data.GestureFrame;
 import gesturedetection.data.GesturePoint;
+import gesturedetection.data.normalizer.Normalizer;
 
 /**
  * Created by Carbon Studios on 17.03.2017.
@@ -19,8 +20,8 @@ public class MeasureRestingPositionScenario extends Scenario {
 
     public int frame = 0;
 
-    public MeasureRestingPositionScenario(DataRecorder recorder) {
-        super(recorder);
+    public MeasureRestingPositionScenario(DataRecorder recorder, Normalizer normalizer) {
+        super(recorder, normalizer);
     }
 
     public void activate() {

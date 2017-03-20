@@ -2,6 +2,7 @@ package gesturedetection.scenario;
 
 import edu.ufl.digitalworlds.j4k.Skeleton;
 import gesturedetection.data.DataRecorder;
+import gesturedetection.data.normalizer.Normalizer;
 
 import java.io.BufferedWriter;
 import java.io.File;
@@ -19,8 +20,8 @@ public class SaveDataToFileScenario extends Scenario {
     private File outputFile;
     private StringBuffer sbf;
 
-    public SaveDataToFileScenario(DataRecorder recorder) {
-        super(recorder);
+    public SaveDataToFileScenario(DataRecorder recorder, Normalizer normalizer) {
+        super(recorder, normalizer);
     }
 
     public void activate() {
