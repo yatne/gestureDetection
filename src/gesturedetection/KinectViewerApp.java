@@ -27,6 +27,7 @@ public class KinectViewerApp extends DWApp implements ChangeListener {
     private JLabel state;
 
     private JButton captureRestAvgButon;
+    private JButton saveDataToFileButton;
 
     public void GUIsetup(JPanel p_root) {
         setLoadingProgress("Uruchamianie", 20);
@@ -40,6 +41,10 @@ public class KinectViewerApp extends DWApp implements ChangeListener {
         captureRestAvgButon.setSelected(false);
         captureRestAvgButon.addActionListener(this);
 
+        saveDataToFileButton = new JButton("Zapis do pliku");
+        saveDataToFileButton.setSelected(false);
+        saveDataToFileButton.addActionListener(this);
+
         JPanel controls = new JPanel(new GridLayout(0, 6));
 
         accelerometer = new JLabel("0,0,0");
@@ -48,6 +53,7 @@ public class KinectViewerApp extends DWApp implements ChangeListener {
         controls.add(new JLabel("Wykryty gest:"));
         controls.add(state);
         controls.add(captureRestAvgButon);
+        controls.add(saveDataToFileButton);
 
         setLoadingProgress("Intitializing OpenGL...", 60);
         main_panel = new ViewerPanel3D();
@@ -86,8 +92,11 @@ public class KinectViewerApp extends DWApp implements ChangeListener {
     @Override
     public void GUIactionPerformed(ActionEvent e) {
 
-       if (e.getSource() == captureRestAvgButon) {
+        if (e.getSource() == captureRestAvgButon) {
             myKinect.getMeasureRestScenario().activate();
+        }
+        if (e.getSource() == saveDataToFileButton) {
+            myKinect.getSaveDataToFileScenario().activate();
         }
     }
 

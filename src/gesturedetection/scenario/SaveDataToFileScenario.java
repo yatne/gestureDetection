@@ -12,6 +12,8 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 
+import static gesturedetection.scenario.MeasureRestingPositionScenario.TIMER;
+
 /**
  * Created by Carbon Studios on 18.03.2017.
  */
@@ -27,6 +29,11 @@ public class SaveDataToFileScenario extends Scenario {
     }
 
     public void activate() {
+        try {
+            Thread.sleep(TIMER);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
         fileNbr++;
         outputFile = new File(OUTPUT_FILE_PATH + fileNbr + ".csv");
     }

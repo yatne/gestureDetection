@@ -8,34 +8,26 @@ import gesturedetection.common.Constants;
 import gesturedetection.data.DataRecorder;
 import gesturedetection.data.normalizer.EllNormalizer;
 import gesturedetection.data.points.BasicGesturePointBuilder;
-import gesturedetection.neural.Neural;
 import gesturedetection.scenario.MeasureRestingPositionScenario;
 import gesturedetection.scenario.SaveDataToFileScenario;
 import gesturedetection.scenario.Scenario;
-import java.io.BufferedWriter;
-import java.io.File;
-import java.io.FileWriter;
-import java.io.IOException;
 
 public class Kinect extends J4KSDK {
 
-    private Neural neural;
     ViewerPanel3D viewer = null;
     JLabel label = null;
     boolean mask_players = false;
-
-    private boolean recognise = false;
-    private String state = "nie wiem";
     JLabel stateLabel = null;
 
-    DataRecorder recorder = new DataRecorder(new BasicGesturePointBuilder());
-    EllNormalizer normalizer = new EllNormalizer();
-    Scenario measureRestScenario = new MeasureRestingPositionScenario(recorder, normalizer);
-    Scenario saveDataToFileScenario = new SaveDataToFileScenario(recorder, normalizer);
+    private int frameNumber = 0;
+
+    private DataRecorder recorder = new DataRecorder(new BasicGesturePointBuilder());
+    private EllNormalizer normalizer = new EllNormalizer();
+    private MeasureRestingPositionScenario measureRestScenario = new MeasureRestingPositionScenario(recorder, normalizer);
+    private Scenario saveDataToFileScenario = new SaveDataToFileScenario(recorder, normalizer);
 
     public Kinect() {
         super();
-        neural = new Neural();
     }
 
     public void setViewer(ViewerPanel3D viewer) {
@@ -78,75 +70,31 @@ public class Kinect extends J4KSDK {
         for (int i = 0; i < getSkeletonCountLimit(); i++) {
             skeleton = Skeleton.getSkeleton(i, flags, positions, orientations, state, this);
             if (skeleton.isTracked()) {
-                measureRestScenario.takeFrame(skeleton);
+                if (frameNumber > Constants.FRAME_SLEEP){
+                    frameNumber = 0;
+                    onTrackedSkeletonLogic(skeleton);
+                } else {
+                    frameNumber++;
+                }
             }
             viewer.skeletons[i] = skeleton;
         }
     }
 
-    private void recognise(Skeleton skeleton) {
-        double[] in = new double[51];
-        Double ell = normalizer.getEll(skeleton);
-        int ignored = 0;
-        if (ell != null) {
-            for (int i = 0; i < Constants.KINECT_JOINT_COUNT; i++) {
-                if (i != Skeleton.SPINE_MID && i != Skeleton.FOOT_LEFT && i != Skeleton.FOOT_RIGHT) {
-                    double[] jointArr = getJointCordsArray(i, skeleton, ell);
-                    in[(3 * i) - (3 * ignored)] = jointArr[0];
-                    in[(3 * i) + 1 - (3 * ignored)] = jointArr[1];
-                    in[(3 * i) + 2 - (3 * ignored)] = jointArr[2];
-                } else {
-                    ignored++;
-                }
-            }
-            double[] out = neural.getRespone(in);
-            interpret(out);
-        }
-    }
-
-    private void interpret(double[] out) {
-        if (out[0] == 0 && out[1] == 0) {
-            state = "STANIE";
-        } else if (out[0] == 0 && out[1] == 1) {
-            state = "T";
-        } else if (out[0] == 1 && out[1] == 0) {
-            state = "RECE DO GORY";
-        } else if (out[0] == 1 && out[1] == 1) {
-            state = "RECE POD BOKI";
-        }
-        stateLabel.setText(state);
-    }
-
-
-
-    private double[] getJointCordsArray(int i, Skeleton s, Double ell) {
-        if (s.isJointTrackedOrInferred(i)) {
-            return normalize(s.get3DJoint(i), s.get3DJoint(Skeleton.SPINE_MID), ell);
+    public void onTrackedSkeletonLogic(Skeleton skeleton) {
+        measureRestScenario.takeFrame(skeleton);
+        if (recorder.anyJointAboveThreshold(measureRestScenario.getAvgFrame(), normalizer, skeleton)){
+            saveDataToFileScenario.takeFrame(skeleton);
         } else {
-            return new double[]{0, 0, 0};
-        }
-    }
-
-    private String getJointCords(int i, Skeleton s, Double ell) {
-        String st = "";
-        if (s.isJointTrackedOrInferred(i)) {
-            for (double d : normalize(s.get3DJoint(i), s.get3DJoint(Skeleton.SPINE_MID), ell)) {
-                st = st + d + ",";
+            if (saveDataToFileScenario.isActive()) {
+                saveDataToFileScenario.deactivate();
             }
-            return st;
-        } else {
-            return "0,0,0,";
         }
     }
 
-    private double[] normalize(double[] joint, double[] spineMid, double ell) {
-        for (int i = 0; i <= 2; i++) {
-            joint[i] = (joint[i] - spineMid[i]) / ell;
-        }
-        return joint;
+    private boolean anyJointAboveThreshold(Skeleton skeleton) {
+        return false;
     }
-
-
 
     @Override
     public void onColorFrameEvent(byte[] data) {
@@ -176,30 +124,7 @@ public class Kinect extends J4KSDK {
             bgra[idx] = 0;
             idx++;
         }
-
         viewer.videoTexture.update(getInfraredWidth(), getInfraredHeight(), bgra);
-    }
-
-
-
-    public boolean isRecognise() {
-        return recognise;
-    }
-
-    public void setRecognise(boolean recognise) {
-        this.recognise = recognise;
-    }
-
-    public String getState() {
-        return state;
-    }
-
-    public void setState(String state) {
-        this.state = state;
-    }
-
-    public JLabel getStateLabel() {
-        return stateLabel;
     }
 
     public void setStateLabel(JLabel stateLabel) {
@@ -210,7 +135,9 @@ public class Kinect extends J4KSDK {
         return measureRestScenario;
     }
 
-    public void setMeasureRestScenario(Scenario measureRestScenario) {
-        this.measureRestScenario = measureRestScenario;
+
+    public Scenario getSaveDataToFileScenario() {
+        return saveDataToFileScenario;
     }
+
 }

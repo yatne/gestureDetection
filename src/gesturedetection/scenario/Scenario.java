@@ -29,4 +29,7 @@ public abstract class Scenario {
     protected abstract void onFrame(Skeleton skeleton);
     public abstract void deactivate();
 
+    public boolean isActive() {
+        return active;
+    }
 }

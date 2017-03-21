@@ -47,6 +47,7 @@ public class MeasureRestingPositionScenario extends Scenario {
 
     public void deactivate() {
         wholeData = recorder.getData();
+        normalizer.normalizeData(recorder.getData());
         calculateAverage();
         this.active = false;
     }
@@ -77,5 +78,13 @@ public class MeasureRestingPositionScenario extends Scenario {
                 avgPoint.setZ(avgPoint.getZ()/count[i]);
             }
         }
+    }
+
+    public GestureData getWholeData() {
+        return wholeData;
+    }
+
+    public GestureFrame getAvgFrame() {
+        return avgFrame;
     }
 }
