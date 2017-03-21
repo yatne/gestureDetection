@@ -1,7 +1,10 @@
 package gesturedetection.scenario;
 
 import edu.ufl.digitalworlds.j4k.Skeleton;
+import gesturedetection.common.Constants;
 import gesturedetection.data.DataRecorder;
+import gesturedetection.data.GestureFrame;
+import gesturedetection.data.GesturePoint;
 import gesturedetection.data.normalizer.Normalizer;
 
 import java.io.BufferedWriter;
@@ -13,9 +16,8 @@ import java.io.IOException;
  * Created by Carbon Studios on 18.03.2017.
  */
 public class SaveDataToFileScenario extends Scenario {
-    private final static String OUTPUT_FILE_PATH = "C:/studia/mgr/out/out";
+    private final static String OUTPUT_FILE_PATH = "C:/studia/mgr/out/gesture_out";
     private static int fileNbr = 0;
-    private boolean saveToFile = false;
     private BufferedWriter bwr;
     private File outputFile;
     private StringBuffer sbf;
@@ -25,48 +27,29 @@ public class SaveDataToFileScenario extends Scenario {
     }
 
     public void activate() {
-
+        fileNbr++;
+        outputFile = new File(OUTPUT_FILE_PATH + fileNbr + ".csv");
     }
 
     protected void onFrame(Skeleton skeleton) {
-
+        recorder.record(skeleton);
     }
 
     public void deactivate() {
-
-    }
-    public boolean isSaveToFile() {
-        return saveToFile;
+        normalizer.normalizeData(recorder.getData());
+        saveToFile();
     }
 
-    public void setSaveToFile(boolean saveToFile) {
-        this.saveToFile = saveToFile;
-        if (saveToFile) {
-            ++fileNbr;
-            outputFile = new File(OUTPUT_FILE_PATH + fileNbr + ".csv");
-            sbf = new StringBuffer();
-            try {
-                bwr = new BufferedWriter(new FileWriter(outputFile));
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
+    private void saveToFile() {
+        sbf = new StringBuffer();
+        try {
+            bwr = new BufferedWriter(new FileWriter(outputFile));
+        } catch (IOException e) {
+            e.printStackTrace();
         }
-    }
-
-    private void saveLineToFile(Skeleton skeleton) {
-//        Double ell = normalizer.getEll(skeleton);
-//        if (ell != null) {
-//            for (int i = 0; i <= 19; i++) {
-//                if (i != Skeleton.SPINE_MID && i != Skeleton.FOOT_LEFT && i != Skeleton.FOOT_RIGHT) {
-//                    sbf.append(getJointCords(i, skeleton, ell));
-//                }
-//            }
-//            sbf.append(System.getProperty("line.separator"));
-//        }
-    }
-
-    public void endAndSave() {
-        saveToFile = false;
+        for (GestureFrame gestureFrame : recorder.getData().getFrames()) {
+            saveFrameToFile(gestureFrame);
+        }
         try {
             bwr.write(sbf.toString());
             bwr.flush();
@@ -75,4 +58,13 @@ public class SaveDataToFileScenario extends Scenario {
             e.printStackTrace();
         }
     }
+
+    private void saveFrameToFile(GestureFrame gestureFrame) {
+        for (int i = 0; i < Constants.KINECT_JOINT_COUNT; i++) {
+            GesturePoint point = gestureFrame.getJoint(i);
+            sbf.append(i).append(" ").append(point.toString());
+        }
+        sbf.append(System.getProperty("line.separator"));
+    }
+
 }

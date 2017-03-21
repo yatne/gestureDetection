@@ -47,8 +47,8 @@ public class EllNormalizer extends Normalizer {
     @Override
     public GestureFrame normalizeFrame(GestureFrame frame) {
         for (int i = 0; i < Constants.KINECT_JOINT_COUNT; i++) {
-            if (frame.getJoints().get(i) != null) {
-                frame.getJoints().put(i, normalizePoint(frame.getJoints().get(i)));
+            if (frame.getJointsMap().get(i) != null) {
+                frame.getJointsMap().put(i, normalizePoint(frame.getJointsMap().get(i)));
             }
         }
         return frame;

@@ -59,18 +59,18 @@ public class MeasureRestingPositionScenario extends Scenario {
 
         for (GestureFrame gestureFrame : wholeData.getFrames()) {
             for (int i = 0; i < Constants.KINECT_JOINT_COUNT; i++) {
-                GesturePoint joint = gestureFrame.getJoints().get(i);
+                GesturePoint joint = gestureFrame.getJointsMap().get(i);
                 if (joint != null) {
                     count[i]++;
-                    if (avgFrame.getJoints().containsKey(i)) {
-                        avgFrame.getJoints().get(i).add(joint);
+                    if (avgFrame.getJointsMap().containsKey(i)) {
+                        avgFrame.getJointsMap().get(i).add(joint);
                     }
-                    avgFrame.getJoints().put(i,joint);
+                    avgFrame.getJointsMap().put(i,joint);
                 }
             }
         }
         for (int i = 0; i < Constants.KINECT_JOINT_COUNT; i++) {
-            GesturePoint avgPoint = avgFrame.getJoints().get(i);
+            GesturePoint avgPoint = avgFrame.getJointsMap().get(i);
             if (avgPoint != null) {
                 avgPoint.setX(avgPoint.getX()/count[i]);
                 avgPoint.setY(avgPoint.getY()/count[i]);

@@ -8,6 +8,12 @@ public class GesturePoint {
     public GesturePoint() {
     }
 
+    public GesturePoint(double x, double y, double z) {
+        this.x = x;
+        this.y = y;
+        this.z = z;
+    }
+
     public double getX() {
         return x;
     }
@@ -36,5 +42,10 @@ public class GesturePoint {
         this.x = this.x + joint.getX();
         this.y = this.y + joint.getY();
         this.z = this.z + joint.getZ();
+    }
+
+    @Override
+    public String toString() {
+        return x + " " + y + " " + z + " ";
     }
 }

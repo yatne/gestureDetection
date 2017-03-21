@@ -13,8 +13,16 @@ public class GestureFrame {
         joints.put(i, gesturePoint);
     }
 
-    public HashMap<Integer, GesturePoint> getJoints() {
+    public HashMap<Integer, GesturePoint> getJointsMap() {
         return joints;
+    }
+
+    public GesturePoint getJoint(int i) {
+        if (joints.containsKey(i)) {
+            return joints.get(i);
+        } else {
+            return new GesturePoint(0,0,0);
+        }
     }
 
     public void setJoints(HashMap<Integer, GesturePoint> joints) {
