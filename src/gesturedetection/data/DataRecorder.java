@@ -9,11 +9,12 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class DataRecorder {
+    private int REL_JOINT = Skeleton.SPINE_MID;
     private PointBuilderInterface pointBuilder;
 
     private GestureData data = new GestureData();
     private List<InputPoint> currentFrame = new ArrayList<InputPoint>();
-    private List<InputPoint> lastFrame = new ArrayList<InputPoint>();
+    private InputPoint chestPoint;
 
     public DataRecorder(PointBuilderInterface pointBuilder) {
         this.pointBuilder = pointBuilder;
@@ -25,11 +26,17 @@ public class DataRecorder {
     }
 
     private GestureFrame recordOneFrame(Skeleton skeletonFrame) {
-        lastFrame = currentFrame;
         currentFrame = getDataFromSkeleton(skeletonFrame);
         GestureFrame gestureFrame = new GestureFrame();
+        if (chestPoint == null) {
+            double[] coords = skeletonFrame.get3DJoint(REL_JOINT);
+            chestPoint = new InputPoint(coords[0], coords[1], coords[2], REL_JOINT);
+        }
         for (InputPoint inputPoint : currentFrame) {
-            gestureFrame.putGestureFrame(inputPoint.getSkeletonNode(), pointBuilder.calculate(inputPoint));
+            if (inputPoint.getSkeletonNode() == REL_JOINT) {
+                chestPoint = inputPoint;
+            }
+            gestureFrame.putGestureFrame(inputPoint.getSkeletonNode(), pointBuilder.calculate(inputPoint, chestPoint));
         }
         return gestureFrame;
     }
@@ -69,5 +76,9 @@ public class DataRecorder {
             return true;
         }
         return false;
+    }
+
+    public void destroyData(){
+        this.data = new GestureData();
     }
 }

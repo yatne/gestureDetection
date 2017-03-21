@@ -13,7 +13,8 @@ import gesturedetection.data.normalizer.Normalizer;
  */
 public class MeasureRestingPositionScenario extends Scenario {
     public static final int TIMER = 1000 * 5; //10sec
-    public static final int FRAMES_COUNT = 100;
+    public static final int FRAMES_COUNT = 20;
+    boolean done = false;
 
     private GestureData wholeData;
     private GestureFrame avgFrame;
@@ -30,6 +31,7 @@ public class MeasureRestingPositionScenario extends Scenario {
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
+        done = false;
         wholeData = new GestureData();
         avgFrame = new GestureFrame();
         this.active = true;
@@ -37,6 +39,9 @@ public class MeasureRestingPositionScenario extends Scenario {
 
     public void onFrame(Skeleton skeleton) {
         if (frame < FRAMES_COUNT) {
+            if (!normalizer.isEllCalculated()) {
+                normalizer.init(skeleton);
+            }
             recorder.record(skeleton);
             frame++;
         } else {
@@ -48,7 +53,9 @@ public class MeasureRestingPositionScenario extends Scenario {
     public void deactivate() {
         wholeData = recorder.getData();
         normalizer.normalizeData(recorder.getData());
+        done = true;
         calculateAverage();
+        recorder.destroyData();
         this.active = false;
     }
 
@@ -86,5 +93,9 @@ public class MeasureRestingPositionScenario extends Scenario {
 
     public GestureFrame getAvgFrame() {
         return avgFrame;
+    }
+
+    public boolean isDone() {
+        return done;
     }
 }

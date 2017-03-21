@@ -25,10 +25,12 @@ public class EllNormalizer extends Normalizer {
 
     public void calculateEll(Skeleton skeleton) {
         if (skeleton.isJointTrackedOrInferred(Skeleton.SPINE_MID)) {
-            if (skeleton.isJointTrackedOrInferred(Skeleton.SHOULDER_LEFT) && skeleton.isJointTrackedOrInferred(Skeleton.WRIST_LEFT)) {
-                ell = calculateDistance(skeleton.get3DJoint(Skeleton.SHOULDER_LEFT), skeleton.get3DJoint(Skeleton.WRIST_LEFT));
-            } else if (skeleton.isJointTrackedOrInferred(Skeleton.SHOULDER_RIGHT) && skeleton.isJointTrackedOrInferred(Skeleton.WRIST_RIGHT)) {
-                ell = calculateDistance(skeleton.get3DJoint(Skeleton.SHOULDER_RIGHT), skeleton.get3DJoint(Skeleton.WRIST_RIGHT));
+            if (skeleton.isJointTrackedOrInferred(Skeleton.ELBOW_LEFT) && skeleton.isJointTrackedOrInferred(Skeleton.WRIST_LEFT)) {
+                ell = calculateDistance(skeleton.get3DJoint(Skeleton.ELBOW_LEFT), skeleton.get3DJoint(Skeleton.WRIST_LEFT));
+                ellCalculated = true;
+            } else if (skeleton.isJointTrackedOrInferred(Skeleton.ELBOW_RIGHT) && skeleton.isJointTrackedOrInferred(Skeleton.WRIST_RIGHT)) {
+                ell = calculateDistance(skeleton.get3DJoint(Skeleton.ELBOW_RIGHT), skeleton.get3DJoint(Skeleton.WRIST_RIGHT));
+                ellCalculated = true;
             }
         }
     }
@@ -46,9 +48,11 @@ public class EllNormalizer extends Normalizer {
 
     @Override
     public GestureFrame normalizeFrame(GestureFrame frame) {
-        for (int i = 0; i < Constants.KINECT_JOINT_COUNT; i++) {
-            if (frame.getJointsMap().get(i) != null) {
-                frame.getJointsMap().put(i, normalizePoint(frame.getJointsMap().get(i)));
+        if (!frame.isNormalized()) {
+            for (int i = 0; i < Constants.KINECT_JOINT_COUNT; i++) {
+                if (frame.getJointsMap().get(i) != null) {
+                    frame.getJointsMap().put(i, normalizePoint(frame.getJointsMap().get(i)));
+                }
             }
         }
         return frame;
@@ -61,5 +65,7 @@ public class EllNormalizer extends Normalizer {
         }
         return data;
     }
+
+
 }
 

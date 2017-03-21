@@ -1,6 +1,7 @@
 package gesturedetection;
 
 import javax.swing.JLabel;
+
 import edu.ufl.digitalworlds.j4k.DepthMap;
 import edu.ufl.digitalworlds.j4k.J4KSDK;
 import edu.ufl.digitalworlds.j4k.Skeleton;
@@ -8,6 +9,7 @@ import gesturedetection.common.Constants;
 import gesturedetection.data.DataRecorder;
 import gesturedetection.data.normalizer.EllNormalizer;
 import gesturedetection.data.points.BasicGesturePointBuilder;
+import gesturedetection.data.points.RelativeGesturePointBuilder;
 import gesturedetection.scenario.MeasureRestingPositionScenario;
 import gesturedetection.scenario.SaveDataToFileScenario;
 import gesturedetection.scenario.Scenario;
@@ -18,16 +20,18 @@ public class Kinect extends J4KSDK {
     JLabel label = null;
     boolean mask_players = false;
     JLabel stateLabel = null;
+    private KinectViewerApp app;
 
     private int frameNumber = 0;
 
-    private DataRecorder recorder = new DataRecorder(new BasicGesturePointBuilder());
+    private DataRecorder recorder = new DataRecorder(new RelativeGesturePointBuilder());
     private EllNormalizer normalizer = new EllNormalizer();
     private MeasureRestingPositionScenario measureRestScenario = new MeasureRestingPositionScenario(recorder, normalizer);
     private Scenario saveDataToFileScenario = new SaveDataToFileScenario(recorder, normalizer);
 
-    public Kinect() {
+    public Kinect(KinectViewerApp app) {
         super();
+        this.app = app;
     }
 
     public void setViewer(ViewerPanel3D viewer) {
@@ -70,7 +74,7 @@ public class Kinect extends J4KSDK {
         for (int i = 0; i < getSkeletonCountLimit(); i++) {
             skeleton = Skeleton.getSkeleton(i, flags, positions, orientations, state, this);
             if (skeleton.isTracked()) {
-                if (frameNumber > Constants.FRAME_SLEEP){
+                if (frameNumber > Constants.FRAME_SLEEP) {
                     frameNumber = 0;
                     onTrackedSkeletonLogic(skeleton);
                 } else {
@@ -83,11 +87,19 @@ public class Kinect extends J4KSDK {
 
     public void onTrackedSkeletonLogic(Skeleton skeleton) {
         measureRestScenario.takeFrame(skeleton);
-        if (recorder.anyJointAboveThreshold(measureRestScenario.getAvgFrame(), normalizer, skeleton)){
-            saveDataToFileScenario.takeFrame(skeleton);
-        } else {
+        if (measureRestScenario.isDone()) {
+            app.changeStateMsg("zrobione!");
             if (saveDataToFileScenario.isActive()) {
-                saveDataToFileScenario.deactivate();
+                if (recorder.anyJointAboveThreshold(measureRestScenario.getAvgFrame(), normalizer, skeleton)) {
+                    saveDataToFileScenario.takeFrame(skeleton);
+                    app.changeStateMsg("JEST!");
+                } else {
+                    app.changeStateMsg("NIE MA!");
+                    if (saveDataToFileScenario.isActive() && recorder.getData().getFrames().size() > 0) {
+                        saveDataToFileScenario.deactivate();
+                        app.changeStateMsg("ZROBIONE!");
+                    }
+                }
             }
         }
     }

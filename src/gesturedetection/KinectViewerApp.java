@@ -31,7 +31,7 @@ public class KinectViewerApp extends DWApp implements ChangeListener {
 
     public void GUIsetup(JPanel p_root) {
         setLoadingProgress("Uruchamianie", 20);
-        myKinect = new Kinect();
+        myKinect = new Kinect(this);
 
         if (!myKinect.start(Kinect.DEPTH | Kinect.COLOR | Kinect.SKELETON | Kinect.XYZ | Kinect.PLAYER_INDEX)) {
             DWApp.showErrorDialog("ERROR", "Błąd podłączenia kamery Kinect");
@@ -48,7 +48,7 @@ public class KinectViewerApp extends DWApp implements ChangeListener {
         JPanel controls = new JPanel(new GridLayout(0, 6));
 
         accelerometer = new JLabel("0,0,0");
-        state = new JLabel("nie wiem");
+        state = new JLabel("Przekalibruj!");
 
         controls.add(new JLabel("Wykryty gest:"));
         controls.add(state);
@@ -96,11 +96,18 @@ public class KinectViewerApp extends DWApp implements ChangeListener {
             myKinect.getMeasureRestScenario().activate();
         }
         if (e.getSource() == saveDataToFileButton) {
+            if (myKinect.getSaveDataToFileScenario().isActive()) {
+                myKinect.getSaveDataToFileScenario().deactivate();
+            }
             myKinect.getSaveDataToFileScenario().activate();
         }
     }
 
     public void stateChanged(ChangeEvent e) {
+    }
+
+    public void changeStateMsg(String msg) {
+        state.setText(msg);
     }
 
 }

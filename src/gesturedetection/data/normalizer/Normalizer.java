@@ -10,8 +10,14 @@ import gesturedetection.data.GesturePoint;
  */
 public abstract class Normalizer {
 
+    protected boolean ellCalculated = false;
+
     public abstract void init(Skeleton skeleton);
     public abstract GesturePoint normalizePoint(GesturePoint point);
     public abstract GestureFrame normalizeFrame(GestureFrame frame);
     public abstract GestureData normalizeData(GestureData data);
+
+    public boolean isEllCalculated() {
+        return ellCalculated;
+    }
 }

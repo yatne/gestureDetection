@@ -36,6 +36,7 @@ public class SaveDataToFileScenario extends Scenario {
         }
         fileNbr++;
         outputFile = new File(OUTPUT_FILE_PATH + fileNbr + ".csv");
+        active = true;
     }
 
     protected void onFrame(Skeleton skeleton) {
@@ -45,6 +46,8 @@ public class SaveDataToFileScenario extends Scenario {
     public void deactivate() {
         normalizer.normalizeData(recorder.getData());
         saveToFile();
+        recorder.destroyData();
+        active = false;
     }
 
     private void saveToFile() {
@@ -54,6 +57,7 @@ public class SaveDataToFileScenario extends Scenario {
         } catch (IOException e) {
             e.printStackTrace();
         }
+
         for (GestureFrame gestureFrame : recorder.getData().getFrames()) {
             saveFrameToFile(gestureFrame);
         }

@@ -4,6 +4,7 @@ import java.util.HashMap;
 
 public class GestureFrame {
     private HashMap<Integer, GesturePoint> joints;
+    private boolean normalized;
 
     public GestureFrame() {
         joints = new HashMap<Integer, GesturePoint>();
@@ -23,6 +24,14 @@ public class GestureFrame {
         } else {
             return new GesturePoint(0,0,0);
         }
+    }
+
+    public boolean isNormalized() {
+        return normalized;
+    }
+
+    public void setNormalized(boolean normalized) {
+        this.normalized = normalized;
     }
 
     public void setJoints(HashMap<Integer, GesturePoint> joints) {
