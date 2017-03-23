@@ -13,7 +13,7 @@ import gesturedetection.data.normalizer.Normalizer;
  */
 public class MeasureRestingPositionScenario extends Scenario {
     public static final int TIMER = 1000 * 5; //10sec
-    public static final int FRAMES_COUNT = 20;
+    public static final int FRAMES_COUNT = 10;
     boolean done = false;
 
     private GestureData wholeData;
@@ -97,5 +97,9 @@ public class MeasureRestingPositionScenario extends Scenario {
 
     public boolean isDone() {
         return done;
+    }
+
+    public void setDone(boolean done) {
+        this.done = done;
     }
 }

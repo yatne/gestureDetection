@@ -18,24 +18,20 @@ import static gesturedetection.scenario.MeasureRestingPositionScenario.TIMER;
  * Created by Carbon Studios on 18.03.2017.
  */
 public class SaveDataToFileScenario extends Scenario {
-    private final static String OUTPUT_FILE_PATH = "C:/studia/mgr/out/gesture_out";
+    private String outputFilePath;
     private static int fileNbr = 0;
     private BufferedWriter bwr;
     private File outputFile;
     private StringBuffer sbf;
 
-    public SaveDataToFileScenario(DataRecorder recorder, Normalizer normalizer) {
+    public SaveDataToFileScenario(DataRecorder recorder, Normalizer normalizer, String outputPath) {
         super(recorder, normalizer);
+        this.outputFilePath = outputPath;
     }
 
     public void activate() {
-        try {
-            Thread.sleep(TIMER);
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
         fileNbr++;
-        outputFile = new File(OUTPUT_FILE_PATH + fileNbr + ".csv");
+        outputFile = new File(outputFilePath + fileNbr + ".csv");
         active = true;
     }
 

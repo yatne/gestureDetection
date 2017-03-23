@@ -8,6 +8,7 @@ import edu.ufl.digitalworlds.j4k.Skeleton;
 import gesturedetection.common.Constants;
 import gesturedetection.data.DataRecorder;
 import gesturedetection.data.normalizer.EllNormalizer;
+import gesturedetection.data.normalizer.NoNormalizer;
 import gesturedetection.data.points.BasicGesturePointBuilder;
 import gesturedetection.data.points.RelativeGesturePointBuilder;
 import gesturedetection.scenario.MeasureRestingPositionScenario;
@@ -15,6 +16,9 @@ import gesturedetection.scenario.SaveDataToFileScenario;
 import gesturedetection.scenario.Scenario;
 
 public class Kinect extends J4KSDK {
+
+    private static final String OUTPUT_PATH_1 = "C:/studia/mgr/out1/gesture_out";
+    private static final String OUTPUT_PATH_2 = "C:/studia/mgr/out2/gesture_out";
 
     ViewerPanel3D viewer = null;
     JLabel label = null;
@@ -25,9 +29,12 @@ public class Kinect extends J4KSDK {
     private int frameNumber = 0;
 
     private DataRecorder recorder = new DataRecorder(new RelativeGesturePointBuilder());
+    private DataRecorder simpleRecorder = new DataRecorder(new BasicGesturePointBuilder());
     private EllNormalizer normalizer = new EllNormalizer();
+    private NoNormalizer noNormalizer = new NoNormalizer();
     private MeasureRestingPositionScenario measureRestScenario = new MeasureRestingPositionScenario(recorder, normalizer);
-    private Scenario saveDataToFileScenario = new SaveDataToFileScenario(recorder, normalizer);
+    private Scenario saveDataToFileScenario = new SaveDataToFileScenario(recorder, normalizer, OUTPUT_PATH_1);
+    private Scenario saveDataToFileScenario2 = new SaveDataToFileScenario(simpleRecorder, noNormalizer, OUTPUT_PATH_2);
 
     public Kinect(KinectViewerApp app) {
         super();
@@ -89,16 +96,21 @@ public class Kinect extends J4KSDK {
         measureRestScenario.takeFrame(skeleton);
         if (measureRestScenario.isDone()) {
             app.changeStateMsg("zrobione!");
-            if (saveDataToFileScenario.isActive()) {
-                if (recorder.anyJointAboveThreshold(measureRestScenario.getAvgFrame(), normalizer, skeleton)) {
-                    saveDataToFileScenario.takeFrame(skeleton);
-                    app.changeStateMsg("JEST!");
-                } else {
-                    app.changeStateMsg("NIE MA!");
-                    if (saveDataToFileScenario.isActive() && recorder.getData().getFrames().size() > 0) {
-                        saveDataToFileScenario.deactivate();
-                        app.changeStateMsg("ZROBIONE!");
-                    }
+            saveDataToFileScenario.activate();
+            saveDataToFileScenario2.activate();
+            measureRestScenario.setDone(false);
+        }
+        if (saveDataToFileScenario.isActive()) {
+            if (recorder.anyJointAboveThreshold(measureRestScenario.getAvgFrame(), normalizer, skeleton)) {
+                saveDataToFileScenario.takeFrame(skeleton);
+                saveDataToFileScenario2.takeFrame(skeleton);
+                app.changeStateMsg("JEST!");
+            } else {
+                app.changeStateMsg("NIE MA!");
+                if (saveDataToFileScenario.isActive() && recorder.getData().getFrames().size() > 0) {
+                    saveDataToFileScenario.deactivate();
+                    saveDataToFileScenario2.deactivate();
+                    app.changeStateMsg("ZROBIONE!");
                 }
             }
         }
