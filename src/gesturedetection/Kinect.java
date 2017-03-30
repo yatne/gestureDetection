@@ -14,11 +14,13 @@ import gesturedetection.data.points.RelativeGesturePointBuilder;
 import gesturedetection.scenario.MeasureRestingPositionScenario;
 import gesturedetection.scenario.SaveDataToFileScenario;
 import gesturedetection.scenario.Scenario;
+import gesturedetection.scenario.ThresholdFindScenario;
 
 public class Kinect extends J4KSDK {
 
     private static final String OUTPUT_PATH_1 = "C:/studia/mgr/out1/gesture_out";
     private static final String OUTPUT_PATH_2 = "C:/studia/mgr/out2/gesture_out";
+    private static final String OUTPUT_PATH_3 = "C:/studia/mgr/out1/wylicz_prog";
 
     ViewerPanel3D viewer = null;
     JLabel label = null;
@@ -27,6 +29,7 @@ public class Kinect extends J4KSDK {
     private KinectViewerApp app;
 
     private int frameNumber = 0;
+    private int framesTaken = 0;
 
     private DataRecorder recorder = new DataRecorder(new RelativeGesturePointBuilder());
     private DataRecorder simpleRecorder = new DataRecorder(new BasicGesturePointBuilder());
@@ -35,6 +38,7 @@ public class Kinect extends J4KSDK {
     private MeasureRestingPositionScenario measureRestScenario = new MeasureRestingPositionScenario(recorder, normalizer);
     private Scenario saveDataToFileScenario = new SaveDataToFileScenario(recorder, normalizer, OUTPUT_PATH_1);
     private Scenario saveDataToFileScenario2 = new SaveDataToFileScenario(simpleRecorder, noNormalizer, OUTPUT_PATH_2);
+    private ThresholdFindScenario thresholdFindScenario = new ThresholdFindScenario(recorder, normalizer, OUTPUT_PATH_3);
 
     public Kinect(KinectViewerApp app) {
         super();
@@ -96,9 +100,15 @@ public class Kinect extends J4KSDK {
         measureRestScenario.takeFrame(skeleton);
         if (measureRestScenario.isDone()) {
             app.changeStateMsg("zrobione!");
-            saveDataToFileScenario.activate();
-            saveDataToFileScenario2.activate();
+            //saveDataToFileScenario.activate();
+            //saveDataToFileScenario2.activate();
+            thresholdFindScenario.activate(measureRestScenario.getAvgFrame());
             measureRestScenario.setDone(false);
+        }
+        if ( thresholdFindScenario.isActive()) {
+            thresholdFindScenario.takeFrame(skeleton);
+            app.changeStateMsg(thresholdFindScenario.isAnyAboveThreshold()?"JEST":"NIE MA");
+            framesTaken ++;
         }
         if (saveDataToFileScenario.isActive()) {
             if (recorder.anyJointAboveThreshold(measureRestScenario.getAvgFrame(), normalizer, skeleton)) {
@@ -113,6 +123,11 @@ public class Kinect extends J4KSDK {
                     app.changeStateMsg("ZROBIONE!");
                 }
             }
+        }
+        app.setFramesTaken(framesTaken);
+        if (framesTaken > 50) {
+            framesTaken = 0;
+            thresholdFindScenario.deactivate();
         }
     }
 

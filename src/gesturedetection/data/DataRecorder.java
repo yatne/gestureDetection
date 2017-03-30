@@ -25,7 +25,7 @@ public class DataRecorder {
         data.addFrame(gestureFrame);
     }
 
-    private GestureFrame recordOneFrame(Skeleton skeletonFrame) {
+    public GestureFrame recordOneFrame(Skeleton skeletonFrame) {
         currentFrame = getDataFromSkeleton(skeletonFrame);
         GestureFrame gestureFrame = new GestureFrame();
         if (chestPoint == null) {

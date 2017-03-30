@@ -25,6 +25,7 @@ public class KinectViewerApp extends DWApp implements ChangeListener {
     private ViewerPanel3D main_panel;
     private JLabel accelerometer;
     private JLabel state;
+    private JLabel framesCunter;
 
     private JButton captureRestAvgButon;
     private JButton saveDataToFileButton;
@@ -49,9 +50,11 @@ public class KinectViewerApp extends DWApp implements ChangeListener {
 
         accelerometer = new JLabel("0,0,0");
         state = new JLabel("Przekalibruj!");
+        framesCunter = new JLabel("0");
 
         controls.add(new JLabel("Wykryty gest:"));
         controls.add(state);
+        controls.add(framesCunter);
         controls.add(captureRestAvgButon);
         controls.add(saveDataToFileButton);
 
@@ -101,6 +104,10 @@ public class KinectViewerApp extends DWApp implements ChangeListener {
             }
             myKinect.getSaveDataToFileScenario().activate();
         }
+    }
+
+    public void setFramesTaken(int framesTaken) {
+        this.framesCunter.setText(String.valueOf(framesTaken));
     }
 
     public void stateChanged(ChangeEvent e) {

@@ -16,6 +16,7 @@ public class NoNormalizer extends Normalizer {
     }
 
     public GestureFrame normalizeFrame(GestureFrame frame) {
+        frame.setNormalized(true);
         return frame;
     }
 

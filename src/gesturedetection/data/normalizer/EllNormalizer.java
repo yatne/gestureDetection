@@ -54,6 +54,7 @@ public class EllNormalizer extends Normalizer {
                     frame.getJointsMap().put(i, normalizePoint(frame.getJointsMap().get(i)));
                 }
             }
+            frame.setNormalized(true);
         }
         return frame;
     }

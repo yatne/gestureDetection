@@ -12,7 +12,7 @@ import gesturedetection.data.normalizer.Normalizer;
  * Created by Carbon Studios on 17.03.2017.
  */
 public class MeasureRestingPositionScenario extends Scenario {
-    public static final int TIMER = 1000 * 5; //10sec
+    public static final int TIMER = 1000 * 3; //10sec
     public static final int FRAMES_COUNT = 10;
     boolean done = false;
 
