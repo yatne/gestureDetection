@@ -1,15 +1,12 @@
 package gesturedetection.pca;
 
-/**
- * Created by User on 2017-03-27.
- */
-public class Latent {
+public class BasicVector {
 
     private double x;
     private double y;
     private double z;
 
-    public Latent(double x, double y, double z) {
+    public BasicVector(double x, double y, double z) {
         this.x = x;
         this.y = y;
         this.z = z;

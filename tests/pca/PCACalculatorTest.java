@@ -12,7 +12,7 @@ public class PCACalculatorTest {
     public void calculatePCATest() {
         GestureData data = createTestData();
         PCACalculator calculator = new PCACalculator();
-        calculator.calculateLatent(data, 1);
+        calculator.calculateBasicVectors(data, 1);
     }
 
     private GestureData createTestData() {

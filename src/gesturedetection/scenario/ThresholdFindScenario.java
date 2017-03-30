@@ -12,8 +12,7 @@ import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 
 public class ThresholdFindScenario extends Scenario {
     private String outputFilePath;
@@ -22,10 +21,12 @@ public class ThresholdFindScenario extends Scenario {
     private File outputFile;
     private StringBuffer sbf;
     private List<ThresholdFindRow> rows;
-    private List<GestureFrame> frames;
     private boolean saveToFile = false;
     private boolean anyAboveThreshold = false;
     private GestureFrame noMoveFrame;
+    private Map<Integer, Double> jointsAboveThreshold;
+    private boolean gestureStartPing = false;
+    private boolean gestureEndPing = false;
 
     public ThresholdFindScenario(DataRecorder recorder, Normalizer normalizer, String path) {
         super(recorder, normalizer);
@@ -41,42 +42,61 @@ public class ThresholdFindScenario extends Scenario {
     }
 
     public void activate() {
-        fileNbr++;
-        if (saveToFile) {
-            outputFile = new File(outputFilePath + fileNbr + ".csv");
-        }
-        rows = new ArrayList<ThresholdFindRow>();
-        frames = new ArrayList<GestureFrame>();
         active = true;
+        rows = new ArrayList<ThresholdFindRow>();
+        jointsAboveThreshold = new HashMap<Integer, Double>();
     }
-
 
     protected void onFrame(Skeleton skeleton) {
         ThresholdFindRow row = new ThresholdFindRow();
         GestureFrame frame = recorder.recordOneFrame(skeleton);
         normalizer.normalizeFrame(frame);
-        frames.add(frame);
-        if (anyJointAboveThreshold(frame, row)) {
-            anyAboveThreshold = true;
+        if (anyAboveThreshold) {
+            if (anyJointAboveThreshold(frame,row)) {
+                anyAboveThreshold = true;
+            } else {
+                gestureEndPing = true;
+                anyAboveThreshold = false;
+                finishGesture();
+            }
         } else {
-            anyAboveThreshold = false;
+            if (anyJointAboveThreshold(frame,row)) {
+                gestureStartPing = true;
+                anyAboveThreshold = true;
+                startNewGesture();
+            }
         }
         rows.add(row);
     }
 
     public void deactivate() {
-        saveToFile();
+        finishGesture();
         active = false;
     }
 
+    private void startNewGesture(){
+        rows = new ArrayList<ThresholdFindRow>();
+        jointsAboveThreshold = new HashMap<Integer, Double>();
+    }
+
+    private void finishGesture(){
+        if (saveToFile) {
+            saveToFile();
+        }
+    }
+
     private void saveToFile() {
+        fileNbr++;
+        if (saveToFile) {
+            outputFile = new File(outputFilePath + fileNbr + ".csv");
+        }
         sbf = new StringBuffer();
         try {
             bwr = new BufferedWriter(new FileWriter(outputFile));
         } catch (IOException e) {
             e.printStackTrace();
         }
-        for(int i = 0; i<Math.min(rows.size(),frames.size()); i++) {
+        for(int i = 0; i<rows.size(); i++) {
             saveRowToFile(rows.get(i));
         }
         try {
@@ -113,13 +133,64 @@ public class ThresholdFindScenario extends Scenario {
         row.putJoint(i, distance);
         if (Math.abs(deltaX) > Constants.THRESHOLD || Math.abs(deltaY) > Constants.THRESHOLD || Math.abs(deltaZ) > Constants.THRESHOLD) {
             row.setThresholdReached(true);
+            updateThresholdMap(deltaX + deltaY + deltaZ, i);
             return true;
         }
         row.setThresholdReached(false);
         return false;
     }
 
+    private void updateThresholdMap(double value, int i) {
+        if (jointsAboveThreshold.containsKey(i)){
+            jointsAboveThreshold.put(i, jointsAboveThreshold.get(i) + value);
+        } else {
+            jointsAboveThreshold.put(i, value);
+        }
+    }
+
+    public Integer[] getMostAboveThreshold(int count) {
+        Map<Integer, Double> map = jointsAboveThreshold;
+        while (map.size() > count) {
+            double min = 100000;
+            int minId = -1;
+            for (Integer integer : map.keySet()) {
+                if (map.get(integer) < min) {
+                    min = map.get(integer);
+                    minId = integer;
+                }
+            }
+            map.remove(minId);
+        }
+        return map.keySet().toArray(new Integer[jointsAboveThreshold.size()>=count?count:jointsAboveThreshold.size()]);
+    }
+
     public boolean isAnyAboveThreshold() {
         return anyAboveThreshold;
+    }
+
+    public boolean checkGestureEndPing() {
+        if (gestureEndPing) {
+            gestureEndPing = false;
+            return true;
+        } else {
+            return false;
+        }
+    }
+
+    public void setGestureStartPing(boolean gestureStartPing) {
+        this.gestureStartPing = gestureStartPing;
+    }
+
+    public boolean checkGestureStartPing() {
+        if (gestureStartPing) {
+            gestureStartPing = false;
+            return true;
+        } else {
+            return false;
+        }
+    }
+
+    public void setGestureEndPing(boolean gestureEndPing) {
+        this.gestureEndPing = gestureEndPing;
     }
 }

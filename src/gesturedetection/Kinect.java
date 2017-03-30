@@ -11,16 +11,13 @@ import gesturedetection.data.normalizer.EllNormalizer;
 import gesturedetection.data.normalizer.NoNormalizer;
 import gesturedetection.data.points.BasicGesturePointBuilder;
 import gesturedetection.data.points.RelativeGesturePointBuilder;
-import gesturedetection.scenario.MeasureRestingPositionScenario;
-import gesturedetection.scenario.SaveDataToFileScenario;
-import gesturedetection.scenario.Scenario;
-import gesturedetection.scenario.ThresholdFindScenario;
+import gesturedetection.pca.PCACalculator;
+import gesturedetection.scenario.*;
 
 public class Kinect extends J4KSDK {
 
-    private static final String OUTPUT_PATH_1 = "C:/studia/mgr/out1/gesture_out";
-    private static final String OUTPUT_PATH_2 = "C:/studia/mgr/out2/gesture_out";
-    private static final String OUTPUT_PATH_3 = "C:/studia/mgr/out1/wylicz_prog";
+    private static final String OUTPUT_PATH_1 = "C:/studia/mgr/out/full_data_";
+    private static final String OUTPUT_PATH_2 = "C:/studia/mgr/out/basic_vectors_";
 
     ViewerPanel3D viewer = null;
     JLabel label = null;
@@ -32,13 +29,13 @@ public class Kinect extends J4KSDK {
     private int framesTaken = 0;
 
     private DataRecorder recorder = new DataRecorder(new RelativeGesturePointBuilder());
-    private DataRecorder simpleRecorder = new DataRecorder(new BasicGesturePointBuilder());
+    private DataRecorder dataRecorder = new DataRecorder(new RelativeGesturePointBuilder());
     private EllNormalizer normalizer = new EllNormalizer();
-    private NoNormalizer noNormalizer = new NoNormalizer();
     private MeasureRestingPositionScenario measureRestScenario = new MeasureRestingPositionScenario(recorder, normalizer);
-    private Scenario saveDataToFileScenario = new SaveDataToFileScenario(recorder, normalizer, OUTPUT_PATH_1);
-    private Scenario saveDataToFileScenario2 = new SaveDataToFileScenario(simpleRecorder, noNormalizer, OUTPUT_PATH_2);
-    private ThresholdFindScenario thresholdFindScenario = new ThresholdFindScenario(recorder, normalizer, OUTPUT_PATH_3);
+    private SaveDataToFileScenario saveDataToFileScenario = new SaveDataToFileScenario(dataRecorder, normalizer, OUTPUT_PATH_1);
+    private ThresholdFindScenario thresholdFindScenario = new ThresholdFindScenario(recorder, normalizer, OUTPUT_PATH_1);
+    private PCACalculator pcaCalculator = new PCACalculator();
+    private CalculatePcaScenario calculatePcaScenario = new CalculatePcaScenario(recorder, normalizer, pcaCalculator, OUTPUT_PATH_2);
 
     public Kinect(KinectViewerApp app) {
         super();
@@ -99,36 +96,29 @@ public class Kinect extends J4KSDK {
     public void onTrackedSkeletonLogic(Skeleton skeleton) {
         measureRestScenario.takeFrame(skeleton);
         if (measureRestScenario.isDone()) {
-            app.changeStateMsg("zrobione!");
-            //saveDataToFileScenario.activate();
-            //saveDataToFileScenario2.activate();
             thresholdFindScenario.activate(measureRestScenario.getAvgFrame());
             measureRestScenario.setDone(false);
         }
-        if ( thresholdFindScenario.isActive()) {
+        if (thresholdFindScenario.isActive()) {
             thresholdFindScenario.takeFrame(skeleton);
             app.changeStateMsg(thresholdFindScenario.isAnyAboveThreshold()?"JEST":"NIE MA");
+            if (thresholdFindScenario.checkGestureStartPing()) {
+                saveDataToFileScenario.activate();
+                calculatePcaScenario.activate(thresholdFindScenario.getMostAboveThreshold(Constants.MOVING_JOINTS_COUNT));
+            }
+            if (thresholdFindScenario.checkGestureEndPing()) {
+                saveDataToFileScenario.deactivate();
+                calculatePcaScenario.deactivate();
+            }
             framesTaken ++;
         }
         if (saveDataToFileScenario.isActive()) {
-            if (recorder.anyJointAboveThreshold(measureRestScenario.getAvgFrame(), normalizer, skeleton)) {
-                saveDataToFileScenario.takeFrame(skeleton);
-                saveDataToFileScenario2.takeFrame(skeleton);
-                app.changeStateMsg("JEST!");
-            } else {
-                app.changeStateMsg("NIE MA!");
-                if (saveDataToFileScenario.isActive() && recorder.getData().getFrames().size() > 0) {
-                    saveDataToFileScenario.deactivate();
-                    saveDataToFileScenario2.deactivate();
-                    app.changeStateMsg("ZROBIONE!");
-                }
-            }
+            saveDataToFileScenario.takeFrame(skeleton);
+        }
+        if (calculatePcaScenario.isActive()) {
+            calculatePcaScenario.takeFrame(skeleton);
         }
         app.setFramesTaken(framesTaken);
-        if (framesTaken > 50) {
-            framesTaken = 0;
-            thresholdFindScenario.deactivate();
-        }
     }
 
     private boolean anyJointAboveThreshold(Skeleton skeleton) {
