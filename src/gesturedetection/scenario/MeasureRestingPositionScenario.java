@@ -72,17 +72,18 @@ public class MeasureRestingPositionScenario extends Scenario {
                     count[i]++;
                     if (avgFrame.getJointsMap().containsKey(i)) {
                         avgFrame.getJointsMap().get(i).add(joint);
+                    } else {
+                        avgFrame.getJointsMap().put(i, joint);
                     }
-                    avgFrame.getJointsMap().put(i,joint);
                 }
             }
         }
         for (int i = 0; i < Constants.KINECT_JOINT_COUNT; i++) {
             GesturePoint avgPoint = avgFrame.getJointsMap().get(i);
             if (avgPoint != null) {
-                avgPoint.setX(avgPoint.getX()/count[i]);
-                avgPoint.setY(avgPoint.getY()/count[i]);
-                avgPoint.setZ(avgPoint.getZ()/count[i]);
+                avgPoint.setX(avgPoint.getX() / count[i]);
+                avgPoint.setY(avgPoint.getY() / count[i]);
+                avgPoint.setZ(avgPoint.getZ() / count[i]);
             }
         }
     }

@@ -15,13 +15,14 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
-public class ThresholdFindScenario extends Scenario{
+public class ThresholdFindScenario extends Scenario {
     private String outputFilePath;
     private static int fileNbr = 0;
     private BufferedWriter bwr;
     private File outputFile;
     private StringBuffer sbf;
     private List<ThresholdFindRow> rows;
+    private List<GestureFrame> frames;
     private boolean saveToFile = false;
     private boolean anyAboveThreshold = false;
     private GestureFrame noMoveFrame;
@@ -34,7 +35,7 @@ public class ThresholdFindScenario extends Scenario{
         }
     }
 
-    public void activate(GestureFrame noMoveFrame){
+    public void activate(GestureFrame noMoveFrame) {
         this.noMoveFrame = noMoveFrame;
         activate();
     }
@@ -45,6 +46,7 @@ public class ThresholdFindScenario extends Scenario{
             outputFile = new File(outputFilePath + fileNbr + ".csv");
         }
         rows = new ArrayList<ThresholdFindRow>();
+        frames = new ArrayList<GestureFrame>();
         active = true;
     }
 
@@ -52,6 +54,8 @@ public class ThresholdFindScenario extends Scenario{
     protected void onFrame(Skeleton skeleton) {
         ThresholdFindRow row = new ThresholdFindRow();
         GestureFrame frame = recorder.recordOneFrame(skeleton);
+        normalizer.normalizeFrame(frame);
+        frames.add(frame);
         if (anyJointAboveThreshold(frame, row)) {
             anyAboveThreshold = true;
         } else {
@@ -72,9 +76,8 @@ public class ThresholdFindScenario extends Scenario{
         } catch (IOException e) {
             e.printStackTrace();
         }
-
-        for (ThresholdFindRow row : rows) {
-            saveRowToFile(row);
+        for(int i = 0; i<Math.min(rows.size(),frames.size()); i++) {
+            saveRowToFile(rows.get(i));
         }
         try {
             bwr.write(sbf.toString());
@@ -91,9 +94,8 @@ public class ThresholdFindScenario extends Scenario{
     }
 
     public boolean anyJointAboveThreshold(GestureFrame frame, ThresholdFindRow row) {
-        normalizer.normalizeFrame(frame);
         for (int i = 0; i < Constants.KINECT_JOINT_COUNT; i++) {
-            if (pointAboveThreshold(frame.getJoint(i), noMoveFrame.getJoint(i), row, i)){
+            if (pointAboveThreshold(frame.getJoint(i), noMoveFrame.getJoint(i), row, i)) {
                 return true;
             }
         }

@@ -26,15 +26,15 @@ public class ThresholdFindRow {
         String row ="";
         for (int i = 0; i < Constants.KINECT_JOINT_COUNT; i++) {
             if (jointDistanceMap.containsKey(i)) {
-                row = row + jointDistanceMap.get(i)[0] + ", " + jointDistanceMap.get(i)[1] + ", " + jointDistanceMap.get(i)[2] + "; ";
+                row = row + jointDistanceMap.get(i)[0] + ", " + jointDistanceMap.get(i)[1] + ", " + jointDistanceMap.get(i)[2] + ", ";
             } else {
-                row = row + "0, 0, 0; ";
+                row = row + "0, 0, 0, ";
             }
         }
         if (thresholdReached) {
-            row = row + "true;";
+            row = row + "true";
         } else {
-            row = row + "false;";
+            row = row + "false";
         }
         return row;
     }
