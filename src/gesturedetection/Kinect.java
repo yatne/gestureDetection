@@ -103,12 +103,12 @@ public class Kinect extends J4KSDK {
             thresholdFindScenario.takeFrame(skeleton);
             app.changeStateMsg(thresholdFindScenario.isAnyAboveThreshold()?"JEST":"NIE MA");
             if (thresholdFindScenario.checkGestureStartPing()) {
+                calculatePcaScenario.activate();
                 saveDataToFileScenario.activate();
-                calculatePcaScenario.activate(thresholdFindScenario.getMostAboveThreshold(Constants.MOVING_JOINTS_COUNT));
             }
             if (thresholdFindScenario.checkGestureEndPing()) {
+                calculatePcaScenario.deactivate(thresholdFindScenario.getMostAboveThreshold(Constants.MOVING_JOINTS_COUNT));
                 saveDataToFileScenario.deactivate();
-                calculatePcaScenario.deactivate();
             }
             framesTaken ++;
         }
@@ -121,9 +121,6 @@ public class Kinect extends J4KSDK {
         app.setFramesTaken(framesTaken);
     }
 
-    private boolean anyJointAboveThreshold(Skeleton skeleton) {
-        return false;
-    }
 
     @Override
     public void onColorFrameEvent(byte[] data) {

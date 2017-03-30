@@ -34,13 +34,9 @@ public class CalculatePcaScenario extends Scenario {
         }
     }
 
-    public void activate(Integer[] joints) {
-        this.joints = joints;
-        activate();
-    }
-
     public void activate() {
         matrices = new ArrayList<BasicMatrixForJoint>();
+        this.active = true;
     }
 
     protected void onFrame(Skeleton skeleton) {
@@ -54,6 +50,12 @@ public class CalculatePcaScenario extends Scenario {
         }
         saveMatricesToFile(matrices);
         recorder.destroyData();
+        this.active = false;
+    }
+
+    public void deactivate(Integer[] mostAboveThreshold) {
+        this.joints = mostAboveThreshold;
+        deactivate();
     }
 
     private void saveMatricesToFile(List<BasicMatrixForJoint> matrices) {
@@ -82,15 +84,15 @@ public class CalculatePcaScenario extends Scenario {
 
     private void saveMatrixToFile(BasicMatrixForJoint matrix) {
         sbf.append("joint: " + matrix.getJoint() + ", matrix: [");
-        sbf.append(matrix.getVector(0).getX()+", ");
-        sbf.append(matrix.getVector(1).getX()+", ");
-        sbf.append(matrix.getVector(2).getX()+"; ");
-        sbf.append(matrix.getVector(0).getY()+", ");
-        sbf.append(matrix.getVector(1).getY()+", ");
-        sbf.append(matrix.getVector(2).getY()+"; ");
-        sbf.append(matrix.getVector(0).getZ()+", ");
-        sbf.append(matrix.getVector(1).getZ()+", ");
-        sbf.append(matrix.getVector(2).getZ()+"] ");
+        sbf.append(matrix.getVector(0).getX() + ", ");
+        sbf.append(matrix.getVector(1).getX() + ", ");
+        sbf.append(matrix.getVector(2).getX() + "; ");
+        sbf.append(matrix.getVector(0).getY() + ", ");
+        sbf.append(matrix.getVector(1).getY() + ", ");
+        sbf.append(matrix.getVector(2).getY() + "; ");
+        sbf.append(matrix.getVector(0).getZ() + ", ");
+        sbf.append(matrix.getVector(1).getZ() + ", ");
+        sbf.append(matrix.getVector(2).getZ() + "] ");
         sbf.append(System.getProperty("line.separator"));
     }
 }
