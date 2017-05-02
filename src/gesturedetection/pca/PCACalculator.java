@@ -32,8 +32,9 @@ public class PCACalculator {
             for (int i = REMOVED_FRAMES_COUNT; i < data.getFrames().size() - REMOVED_FRAMES_COUNT; i++) {
                 newGestureData.addFrame(data.getFrames().get(i));
             }
+            return newGestureData;
         }
-        return newGestureData;
+        return data;
     }
 
 }
