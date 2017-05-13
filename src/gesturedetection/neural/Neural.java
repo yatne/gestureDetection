@@ -1,16 +1,14 @@
 package gesturedetection.neural;
 
 import gesturedetection.pca.SphericalPcaOutput;
-import org.neuroph.contrib.samples.stockmarket.TrainingData;
 import org.neuroph.core.NeuralNetwork;
 import org.neuroph.core.data.DataSet;
 import org.neuroph.core.data.DataSetRow;
-import org.neuroph.core.learning.LearningRule;
-import org.neuroph.core.transfer.Step;
 import org.neuroph.nnet.Perceptron;
 import org.neuroph.util.TransferFunctionType;
 
 public class Neural {
+    private static final String NETWORK_BASE_PATH = "c:/studia/AAATUTATUTA/";
     private static final String NETWORK_PATH = "c:/studia/AAATUTATUTA/NewNeuralNetwork3.nnet";
 
     private int inputCount = 6;
@@ -22,14 +20,14 @@ public class Neural {
 
     public Neural() {
         neuralNetwork = new Perceptron(inputCount, outputCount, TransferFunctionType.STEP);
-        neuralNetwork.save("c:/studia/AAATUTATUTA/neural" + timestamp + ".nnet");
+        neuralNetwork.save(NETWORK_BASE_PATH + "neural" + timestamp + ".nnet");
         trainingData = new DataSet(inputCount, outputCount);
-        trainingData.save("c:/studia/AAATUTATUTA/training" + timestamp + ".tset");
+        trainingData.save(NETWORK_BASE_PATH + "training" + timestamp + ".tset");
     }
 
-    public Neural(String path) {
-        neuralNetwork = NeuralNetwork.load(NETWORK_PATH);
-        trainingData = DataSet.load(NETWORK_PATH);
+    public Neural(String neuralFileName) {
+        neuralNetwork = NeuralNetwork.load(NETWORK_BASE_PATH + neuralFileName);
+        trainingData = DataSet.load(NETWORK_BASE_PATH + neuralFileName.replace("neural", "training"));
     }
 
     public void addTrainingData(SphericalPcaOutput data) {
@@ -44,9 +42,8 @@ public class Neural {
     }
 
     public void train(){
-        //LearningRule a = neuralNetwork.getLearningRule();
         neuralNetwork.learn(trainingData);
-        neuralNetwork.save("c:/studia/AAATUTATUTA/neural" + timestamp + ".nnet");
+        neuralNetwork.save(NETWORK_BASE_PATH + "neural" + timestamp + ".nnet");
     }
 
     public double[] getRespone(double[] in) {

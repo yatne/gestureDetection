@@ -15,6 +15,7 @@ import java.io.IOException;
 import java.util.*;
 
 public class ThresholdFindScenario extends Scenario {
+    private final int coolOffFrames = 3;
     private String outputFilePath;
     private static int fileNbr = 0;
     private BufferedWriter bwr;
@@ -27,6 +28,7 @@ public class ThresholdFindScenario extends Scenario {
     private Map<Integer, Double> jointsAboveThreshold;
     private boolean gestureStartPing = false;
     private boolean gestureEndPing = false;
+    private int noGestureFrames = 0;
 
     public ThresholdFindScenario(DataRecorder recorder, Normalizer normalizer, String path) {
         super(recorder, normalizer);
@@ -52,15 +54,18 @@ public class ThresholdFindScenario extends Scenario {
         GestureFrame frame = recorder.recordOneFrame(skeleton);
         normalizer.normalizeFrame(frame);
         if (anyAboveThreshold) {
-            if (anyJointAboveThreshold(frame,row)) {
+            if (anyJointAboveThreshold(frame, row)) {
+                coolOff(-1);
                 anyAboveThreshold = true;
             } else {
-                gestureEndPing = true;
-                anyAboveThreshold = false;
-                finishGesture();
+                if (coolOff(1)) {
+                    gestureEndPing = true;
+                    anyAboveThreshold = false;
+                    finishGesture();
+                }
             }
         } else {
-            if (anyJointAboveThreshold(frame,row)) {
+            if (anyJointAboveThreshold(frame, row)) {
                 gestureStartPing = true;
                 anyAboveThreshold = true;
                 startNewGesture();
@@ -69,17 +74,25 @@ public class ThresholdFindScenario extends Scenario {
         rows.add(row);
     }
 
+    private boolean coolOff(int i) {
+        if ((i > 0 && noGestureFrames <= coolOffFrames) || (i < 0 && noGestureFrames > 0)) {
+            noGestureFrames = noGestureFrames + i;
+        }
+        System.out.println(noGestureFrames);
+        return noGestureFrames >= coolOffFrames;
+    }
+
     public void deactivate() {
         finishGesture();
         active = false;
     }
 
-    private void startNewGesture(){
+    private void startNewGesture() {
         rows = new ArrayList<ThresholdFindRow>();
         jointsAboveThreshold = new HashMap<Integer, Double>();
     }
 
-    private void finishGesture(){
+    private void finishGesture() {
         if (saveToFile) {
             saveToFile();
         }
@@ -96,7 +109,7 @@ public class ThresholdFindScenario extends Scenario {
         } catch (IOException e) {
             e.printStackTrace();
         }
-        for(int i = 0; i<rows.size(); i++) {
+        for (int i = 0; i < rows.size(); i++) {
             saveRowToFile(rows.get(i));
         }
         try {
@@ -141,7 +154,7 @@ public class ThresholdFindScenario extends Scenario {
     }
 
     private void updateThresholdMap(double value, int i) {
-        if (jointsAboveThreshold.containsKey(i)){
+        if (jointsAboveThreshold.containsKey(i)) {
             jointsAboveThreshold.put(i, jointsAboveThreshold.get(i) + value);
         } else {
             jointsAboveThreshold.put(i, value);
@@ -149,19 +162,13 @@ public class ThresholdFindScenario extends Scenario {
     }
 
     public Integer[] getMostAboveThreshold(int count) {
-        Map<Integer, Double> map = jointsAboveThreshold;
-        while (map.size() > count) {
-            double min = 100000;
-            int minId = -1;
-            for (Integer integer : map.keySet()) {
-                if (map.get(integer) < min) {
-                    min = map.get(integer);
-                    minId = integer;
-                }
-            }
-            map.remove(minId);
+        if (Constants.RECOGNITION_TYPE == 0) {
+            return new Integer[]{9, 10, 11};
+        } else if (Constants.RECOGNITION_TYPE == 1) {
+            return new Integer[]{0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10};
+        } else {
+            return new Integer[]{0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19};
         }
-        return map.keySet().toArray(new Integer[jointsAboveThreshold.size()>=count?count:jointsAboveThreshold.size()]);
     }
 
     public boolean isAnyAboveThreshold() {

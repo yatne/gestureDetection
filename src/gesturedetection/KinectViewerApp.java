@@ -1,22 +1,16 @@
 package gesturedetection;
 
-import java.awt.BorderLayout;
-import java.awt.GridLayout;
+import java.awt.*;
 import java.awt.event.ActionEvent;
-import java.nio.Buffer;
+import java.awt.event.ActionListener;
 
-import javax.swing.JButton;
-import javax.swing.JCheckBox;
-import javax.swing.JComboBox;
-import javax.swing.JLabel;
-import javax.swing.JPanel;
-import javax.swing.JSlider;
+import javax.swing.*;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
 import edu.ufl.digitalworlds.gui.DWApp;
-import edu.ufl.digitalworlds.j4k.J4K1;
-import edu.ufl.digitalworlds.j4k.J4KSDK;
+import gesturedetection.common.Constants;
+import gesturedetection.gui.NumberTextBox;
 
 public class KinectViewerApp extends DWApp implements ChangeListener {
     private final static String outputFilePath = "C:/studia/mgr/out/out.csv";
@@ -24,11 +18,25 @@ public class KinectViewerApp extends DWApp implements ChangeListener {
     private Kinect myKinect;
     private ViewerPanel3D main_panel;
     private JLabel accelerometer;
+    private JLabel preState;
     private JLabel state;
     private JLabel framesCunter;
 
+    private JButton learnGesturesButton;
+    private JButton recogniseGesturesButton;
+
+    private NumberTextBox recordGesturesCount;
+    private NumberTextBox repetitionCount;
+
+    private JTextField neuralPathField;
+    private JButton loadNeuralButton;
+
     private JButton captureRestAvgButon;
     private JButton saveDataToFileButton;
+
+    JRadioButton oneHandRadio;
+    JRadioButton upperHalfRadio;
+    JRadioButton wholeBodyRadio;
 
     public void GUIsetup(JPanel p_root) {
         setLoadingProgress("Uruchamianie", 20);
@@ -46,17 +54,71 @@ public class KinectViewerApp extends DWApp implements ChangeListener {
         saveDataToFileButton.setSelected(false);
         saveDataToFileButton.addActionListener(this);
 
-        JPanel controls = new JPanel(new GridLayout(0, 6));
+        loadNeuralButton = new JButton("Wczytaj sieć");
+        loadNeuralButton.setSelected(false);
+        loadNeuralButton.addActionListener(this);
+
+        learnGesturesButton = new JButton("Nauczaj gestów");
+        learnGesturesButton.setSelected(false);
+        learnGesturesButton.addActionListener(this);
+
+        recogniseGesturesButton = new JButton("Rozpoznawaj gesty");
+        recogniseGesturesButton.setSelected(false);
+        recogniseGesturesButton.addActionListener(this);
+
+        recordGesturesCount = new NumberTextBox();
+        recordGesturesCount.setText("3");
+        repetitionCount = new NumberTextBox();
+        repetitionCount.setText("5");
+        neuralPathField = new JTextField();
+
+        oneHandRadio = new JRadioButton("jedna ręka");
+        oneHandRadio.setSelected(true);
+        oneHandRadio.addActionListener(this);
+        upperHalfRadio = new JRadioButton("tułów");
+        upperHalfRadio.addActionListener(this);
+        wholeBodyRadio = new JRadioButton("całe ciało");
+        wholeBodyRadio.addActionListener(this);
+
+        JPanel controls = new JPanel(new GridLayout(0, 2));
 
         accelerometer = new JLabel("0,0,0");
+        preState = new JLabel("Wykryty gest:");
         state = new JLabel("Przekalibruj!");
         framesCunter = new JLabel("0");
 
-        controls.add(new JLabel("Wykryty gest:"));
-        controls.add(state);
-        controls.add(framesCunter);
-        controls.add(captureRestAvgButon);
-        controls.add(saveDataToFileButton);
+
+        JPanel infoPanel = new JPanel(new GridLayout(1, 2));
+        controls.add(infoPanel);
+        infoPanel.add(preState);
+        infoPanel.add(state);
+
+        JPanel recognitionTypePanel = new JPanel(new GridLayout(1, 3));
+        controls.add(recognitionTypePanel);
+        recognitionTypePanel.add(oneHandRadio);
+        recognitionTypePanel.add(upperHalfRadio);
+        recognitionTypePanel.add(wholeBodyRadio);
+
+        //controls.add(framesCunter);
+        //controls.add(captureRestAvgButon);
+        //controls.add(saveDataToFileButton);
+
+        JPanel countsPanel = new JPanel(new GridLayout(2, 2));
+        controls.add(countsPanel);
+        countsPanel.add(new JLabel("ilość gestów"));
+        countsPanel.add(recordGesturesCount);
+        countsPanel.add(new JLabel("ilość powtórzeń"));
+        countsPanel.add(repetitionCount);
+
+        JPanel neuralPanel = new JPanel(new GridLayout(2, 2));
+        controls.add(neuralPanel);
+        neuralPanel.add(new JLabel("ścieżka do sieci"));
+        neuralPanel.add(neuralPathField);
+        neuralPanel.add(new JLabel(""));
+        neuralPanel.add(loadNeuralButton);
+
+        controls.add(learnGesturesButton);
+        controls.add(recogniseGesturesButton);
 
         setLoadingProgress("Intitializing OpenGL...", 60);
         main_panel = new ViewerPanel3D();
@@ -94,7 +156,18 @@ public class KinectViewerApp extends DWApp implements ChangeListener {
 
     @Override
     public void GUIactionPerformed(ActionEvent e) {
-
+        if (e.getSource() == oneHandRadio || e.getSource() == upperHalfRadio || e.getSource() == wholeBodyRadio) {
+            handleRadios(e.getSource());
+        }
+        if(upperHalfRadio.isSelected()) {
+            Constants.RECOGNITION_TYPE = 2;
+        } else if (wholeBodyRadio.isSelected()){
+            Constants.RECOGNITION_TYPE = 3;
+        } else {
+            Constants.RECOGNITION_TYPE = 1;
+        }
+        Constants.REPETITIONS = Integer.parseInt(repetitionCount.getText());
+        Constants.GESTURES_COUNT = Integer.parseInt(recordGesturesCount.getText());
         if (e.getSource() == captureRestAvgButon) {
             myKinect.getMeasureRestScenario().activate();
         }
@@ -103,6 +176,20 @@ public class KinectViewerApp extends DWApp implements ChangeListener {
                 myKinect.getSaveDataToFileScenario().deactivate();
             }
             myKinect.getSaveDataToFileScenario().activate();
+        }
+
+    }
+
+    private void handleRadios(Object o) {
+        if (o == oneHandRadio) {
+            upperHalfRadio.setSelected(false);
+            wholeBodyRadio.setSelected(false);
+        } else if (o == upperHalfRadio) {
+            oneHandRadio.setSelected(false);
+            wholeBodyRadio.setSelected(false);
+        } else if (o == wholeBodyRadio) {
+            oneHandRadio.setSelected(false);
+            upperHalfRadio.setSelected(false);
         }
     }
 
@@ -115,6 +202,15 @@ public class KinectViewerApp extends DWApp implements ChangeListener {
 
     public void changeStateMsg(String msg) {
         state.setText(msg);
+    }
+
+    public void changePreStateMsg(String msg) {
+        preState.setText(msg);
+    }
+
+    public void changeInfoMsg(String pre, String state) {
+        this.state.setText(state);
+        this.preState.setText(pre);
     }
 
 }
