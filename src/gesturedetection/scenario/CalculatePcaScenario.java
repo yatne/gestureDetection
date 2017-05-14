@@ -1,10 +1,14 @@
 package gesturedetection.scenario;
 
 import edu.ufl.digitalworlds.j4k.Skeleton;
+import gesturedetection.common.Constants;
 import gesturedetection.data.DataRecorder;
 import gesturedetection.data.normalizer.Normalizer;
+import gesturedetection.neural.Neural;
 import gesturedetection.pca.BasicMatrixForJoint;
 import gesturedetection.pca.PCACalculator;
+import gesturedetection.pca.SphericalPcaOutput;
+import gesturedetection.pca.VectorToAngleCalculator;
 
 import java.io.BufferedWriter;
 import java.io.File;
@@ -20,6 +24,12 @@ public class CalculatePcaScenario extends Scenario {
     private File outputFile;
     private StringBuffer sbf;
     private boolean saveToFile = false;
+    private int repetitionMax;
+    private int currentRepetition;
+    private int currentGesture;
+    private int gesturesMax;
+    private boolean learn;
+    private Neural neural;
 
     private PCACalculator pcaCalculator;
     private Integer[] joints;
@@ -39,6 +49,19 @@ public class CalculatePcaScenario extends Scenario {
         this.active = true;
     }
 
+    public void restart(boolean learn, String neuralNetwork) {
+        this.repetitionMax = Constants.REPETITIONS;
+        this.gesturesMax = Constants.GESTURES_COUNT;
+        this.currentRepetition = 1;
+        this.currentGesture = 1;
+        this.learn = learn;
+        if (neuralNetwork == null) {
+            this.neural = new Neural();
+        } else {
+            this.neural = new Neural(neuralNetwork);
+        }
+    }
+
     protected void onFrame(Skeleton skeleton) {
         recorder.record(skeleton);
     }
@@ -49,8 +72,45 @@ public class CalculatePcaScenario extends Scenario {
             matrices.add(pcaCalculator.calculateBasicVectors(recorder.getData(), joints[i]));
         }
         saveMatricesToFile(matrices);
+        List<Double> sphericals = new ArrayList<Double>();
+        for (BasicMatrixForJoint matrice : matrices) {
+            double[] sph = VectorToAngleCalculator.cartToPolar(matrice.getVector(0).asArray());
+            sphericals.add(sph[0]);
+            sphericals.add(sph[1]);
+        }
+        if (this.learn) {
+            if (currentRepetition <= repetitionMax) {
+                SphericalPcaOutput out = new SphericalPcaOutput(sphericals, currentGesture);
+                currentRepetition++;
+                neural.addTrainingData(out);
+            } else {
+                currentGesture++;
+                if (currentGesture <= gesturesMax) {
+                    currentRepetition = 1;
+                    SphericalPcaOutput out = new SphericalPcaOutput(sphericals, currentGesture);
+                    currentRepetition++;
+                    neural.addTrainingData(out);
+                } else {
+                    SphericalPcaOutput out = new SphericalPcaOutput(sphericals);
+                    neural.train();
+                    learn = false;
+                    logDoubles(neural.getRespone(out.getJointsCoords()));
+                }
+            }
+        } else {
+            SphericalPcaOutput out = new SphericalPcaOutput(sphericals);
+            logDoubles(neural.getRespone(out.getJointsCoords()));
+        }
+
         recorder.destroyData();
         this.active = false;
+    }
+
+    private void logDoubles(double[] ds){
+        for (double d : ds) {
+            System.out.print(d);
+        }
+        System.out.println();
     }
 
     public void deactivate(Integer[] mostAboveThreshold) {

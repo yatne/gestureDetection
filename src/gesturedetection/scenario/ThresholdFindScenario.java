@@ -78,7 +78,7 @@ public class ThresholdFindScenario extends Scenario {
         if ((i > 0 && noGestureFrames <= coolOffFrames) || (i < 0 && noGestureFrames > 0)) {
             noGestureFrames = noGestureFrames + i;
         }
-        System.out.println(noGestureFrames);
+        //System.out.println(noGestureFrames);
         return noGestureFrames >= coolOffFrames;
     }
 

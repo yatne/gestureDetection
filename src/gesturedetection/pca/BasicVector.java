@@ -12,6 +12,10 @@ public class BasicVector {
         this.z = z;
     }
 
+    public double[] asArray() {
+        return new double[]{this.x, this.y, this.z};
+    }
+
     public double getX() {
         return x;
     }

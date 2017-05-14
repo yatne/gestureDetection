@@ -10,4 +10,5 @@ public class Constants {
     public static int REPETITIONS;
     public static int GESTURES_COUNT;
     public static int RECOGNITION_TYPE;
+
 }

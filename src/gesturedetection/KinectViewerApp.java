@@ -2,7 +2,6 @@ package gesturedetection;
 
 import java.awt.*;
 import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 
 import javax.swing.*;
 import javax.swing.event.ChangeEvent;
@@ -68,8 +67,10 @@ public class KinectViewerApp extends DWApp implements ChangeListener {
 
         recordGesturesCount = new NumberTextBox();
         recordGesturesCount.setText("3");
+        Constants.GESTURES_COUNT = 3;
         repetitionCount = new NumberTextBox();
         repetitionCount.setText("5");
+        Constants.REPETITIONS = 5;
         neuralPathField = new JTextField();
 
         oneHandRadio = new JRadioButton("jedna ręka");
@@ -159,16 +160,16 @@ public class KinectViewerApp extends DWApp implements ChangeListener {
         if (e.getSource() == oneHandRadio || e.getSource() == upperHalfRadio || e.getSource() == wholeBodyRadio) {
             handleRadios(e.getSource());
         }
-        if(upperHalfRadio.isSelected()) {
+        if (upperHalfRadio.isSelected()) {
             Constants.RECOGNITION_TYPE = 2;
-        } else if (wholeBodyRadio.isSelected()){
+        } else if (wholeBodyRadio.isSelected()) {
             Constants.RECOGNITION_TYPE = 3;
         } else {
             Constants.RECOGNITION_TYPE = 1;
         }
         Constants.REPETITIONS = Integer.parseInt(repetitionCount.getText());
         Constants.GESTURES_COUNT = Integer.parseInt(recordGesturesCount.getText());
-        if (e.getSource() == captureRestAvgButon) {
+        if (e.getSource() == learnGesturesButton) {
             myKinect.getMeasureRestScenario().activate();
         }
         if (e.getSource() == saveDataToFileButton) {

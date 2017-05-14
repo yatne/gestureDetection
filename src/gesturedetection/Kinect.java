@@ -98,6 +98,7 @@ public class Kinect extends J4KSDK {
         if (measureRestScenario.isDone()) {
             thresholdFindScenario.activate(measureRestScenario.getAvgFrame());
             measureRestScenario.setDone(false);
+            calculatePcaScenario.restart(true, null);
         }
         if (thresholdFindScenario.isActive()) {
             thresholdFindScenario.takeFrame(skeleton);
