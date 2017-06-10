@@ -88,6 +88,8 @@ public class Kinect extends J4KSDK {
                 } else {
                     frameNumber++;
                 }
+            } else if (this.thresholdFindScenario.isActive()){
+                this.thresholdFindScenario.deactivate();
             }
             viewer.skeletons[i] = skeleton;
         }
@@ -108,7 +110,7 @@ public class Kinect extends J4KSDK {
                 saveDataToFileScenario.activate();
             }
             if (thresholdFindScenario.checkGestureEndPing()) {
-                calculatePcaScenario.deactivate(thresholdFindScenario.getMostAboveThreshold(Constants.MOVING_JOINTS_COUNT));
+                calculatePcaScenario.deactivate(thresholdFindScenario.getMostAboveThreshold());
                 saveDataToFileScenario.deactivate();
             }
             framesTaken ++;

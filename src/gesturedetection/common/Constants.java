@@ -7,8 +7,19 @@ public class Constants {
     public static final double THRESHOLD = 0.5;
     public static final int MOVING_JOINTS_COUNT = 3;
 
+    public static String neuralFileName;
+
     public static int REPETITIONS;
     public static int GESTURES_COUNT;
     public static int RECOGNITION_TYPE;
 
+    public static int getInputCount(){
+        if (RECOGNITION_TYPE == 1) {
+            return 6;
+        } else if (RECOGNITION_TYPE == 2) {
+            return 20;
+        } else {
+            return 38;
+        }
+    }
 }

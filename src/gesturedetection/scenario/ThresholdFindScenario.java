@@ -161,13 +161,13 @@ public class ThresholdFindScenario extends Scenario {
         }
     }
 
-    public Integer[] getMostAboveThreshold(int count) {
-        if (Constants.RECOGNITION_TYPE == 0) {
+    public Integer[] getMostAboveThreshold() {
+        if (Constants.RECOGNITION_TYPE == 1) {
             return new Integer[]{9, 10, 11};
-        } else if (Constants.RECOGNITION_TYPE == 1) {
-            return new Integer[]{0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10};
+        } else if (Constants.RECOGNITION_TYPE == 2) {
+            return new Integer[]{0, 2, 3, 4, 5, 6, 7, 8, 9, 10};
         } else {
-            return new Integer[]{0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19};
+            return new Integer[]{0, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19};
         }
     }
 
