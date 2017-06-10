@@ -28,6 +28,7 @@ public class Neural {
         timestamp = new Date().getTime();
         this.neuralNetworkFilePath = NETWORK_BASE_PATH + "neural" + timestamp + ".nnet";
         this.trainingDataFilePath = NETWORK_BASE_PATH + "training" + timestamp + ".tset";
+        Constants.neuralFileName = this.neuralNetworkFilePath;
         inputCount = Constants.getInputCount();
         outputCount = (int) Math.floor(Math.log(Constants.GESTURES_COUNT - 1) / Math.log(2)) + 1;
         neuralNetwork = new Perceptron(inputCount, outputCount, TransferFunctionType.STEP);
@@ -39,6 +40,7 @@ public class Neural {
     public Neural(String neuralFileName) {
         neuralFileName = NETWORK_BASE_PATH + neuralFileName;
         trainingDataFilePath = NETWORK_BASE_PATH + neuralFileName.replace("neural", "training");
+        System.out.println(neuralFileName);
         neuralNetwork = NeuralNetwork.load(neuralFileName);
         trainingData = DataSet.load(trainingDataFilePath);
         this.inputCount = neuralNetwork.getInputsCount();
@@ -69,4 +71,7 @@ public class Neural {
         return neuralNetwork.getOutput();
     }
 
+    public String getNeuralNetworkFilePath() {
+        return neuralNetworkFilePath;
+    }
 }

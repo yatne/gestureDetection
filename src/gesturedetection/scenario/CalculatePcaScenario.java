@@ -49,17 +49,18 @@ public class CalculatePcaScenario extends Scenario {
         this.active = true;
     }
 
-    public void restart(boolean learn, String neuralNetwork) {
+    public String restart(boolean learn, String neuralNetworkBasePath) {
         this.repetitionMax = Constants.REPETITIONS;
         this.gesturesMax = Constants.GESTURES_COUNT;
         this.currentRepetition = 1;
         this.currentGesture = 1;
         this.learn = learn;
-        if (neuralNetwork == null) {
+        if (neuralNetworkBasePath == null) {
             this.neural = new Neural();
         } else {
-            this.neural = new Neural(neuralNetwork);
+            this.neural = new Neural(neuralNetworkBasePath);
         }
+        return neural.getNeuralNetworkFilePath();
     }
 
     protected void onFrame(Skeleton skeleton) {

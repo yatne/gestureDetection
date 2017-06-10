@@ -144,6 +144,7 @@ public class ThresholdFindScenario extends Scenario {
         double deltaZ = joint.getZ() - noMoveJoint.getZ();
         distance[2] = deltaZ;
         row.putJoint(i, distance);
+   //     System.out.println(Math.max(Math.abs(deltaX), Math.max( Math.abs(deltaY), Math.abs(deltaZ) )));
         if (Math.abs(deltaX) > Constants.THRESHOLD || Math.abs(deltaY) > Constants.THRESHOLD || Math.abs(deltaZ) > Constants.THRESHOLD) {
             row.setThresholdReached(true);
             updateThresholdMap(deltaX + deltaY + deltaZ, i);

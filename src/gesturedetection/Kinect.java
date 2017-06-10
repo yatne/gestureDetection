@@ -8,8 +8,6 @@ import edu.ufl.digitalworlds.j4k.Skeleton;
 import gesturedetection.common.Constants;
 import gesturedetection.data.DataRecorder;
 import gesturedetection.data.normalizer.EllNormalizer;
-import gesturedetection.data.normalizer.NoNormalizer;
-import gesturedetection.data.points.BasicGesturePointBuilder;
 import gesturedetection.data.points.RelativeGesturePointBuilder;
 import gesturedetection.pca.PCACalculator;
 import gesturedetection.scenario.*;
@@ -36,6 +34,8 @@ public class Kinect extends J4KSDK {
     private ThresholdFindScenario thresholdFindScenario = new ThresholdFindScenario(recorder, normalizer, OUTPUT_PATH_1);
     private PCACalculator pcaCalculator = new PCACalculator();
     private CalculatePcaScenario calculatePcaScenario = new CalculatePcaScenario(recorder, normalizer, pcaCalculator, OUTPUT_PATH_2);
+
+    private boolean skeleTracked;
 
     public Kinect(KinectViewerApp app) {
         super();
@@ -79,19 +79,24 @@ public class Kinect extends J4KSDK {
     public void onSkeletonFrameEvent(boolean[] flags, float[] positions, float[] orientations, byte[] state) {
         if (viewer == null || viewer.skeletons == null) return;
         Skeleton skeleton;
+        skeleTracked = false;
         for (int i = 0; i < getSkeletonCountLimit(); i++) {
             skeleton = Skeleton.getSkeleton(i, flags, positions, orientations, state, this);
             if (skeleton.isTracked()) {
+                skeleTracked = true;
                 if (frameNumber > Constants.FRAME_SLEEP) {
                     frameNumber = 0;
                     onTrackedSkeletonLogic(skeleton);
                 } else {
                     frameNumber++;
                 }
-            } else if (this.thresholdFindScenario.isActive()){
-                this.thresholdFindScenario.deactivate();
             }
             viewer.skeletons[i] = skeleton;
+        }
+        if (!skeleTracked) {
+            if (this.thresholdFindScenario.isActive()){
+                this.thresholdFindScenario.deactivate();
+            }
         }
     }
 
@@ -100,7 +105,8 @@ public class Kinect extends J4KSDK {
         if (measureRestScenario.isDone()) {
             thresholdFindScenario.activate(measureRestScenario.getAvgFrame());
             measureRestScenario.setDone(false);
-            calculatePcaScenario.restart(true, null);
+            String neuralPath = calculatePcaScenario.restart(true, Constants.neuralFileName);
+            app.setNeuralPathField(neuralPath);
         }
         if (thresholdFindScenario.isActive()) {
             thresholdFindScenario.takeFrame(skeleton);

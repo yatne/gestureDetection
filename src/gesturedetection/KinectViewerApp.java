@@ -157,6 +157,9 @@ public class KinectViewerApp extends DWApp implements ChangeListener {
 
     @Override
     public void GUIactionPerformed(ActionEvent e) {
+        if (e.getSource() == neuralPathField) {
+            Constants.neuralFileName = neuralPathField.getText();
+        }
         if (e.getSource() == oneHandRadio || e.getSource() == upperHalfRadio || e.getSource() == wholeBodyRadio) {
             handleRadios(e.getSource());
         }
@@ -212,6 +215,10 @@ public class KinectViewerApp extends DWApp implements ChangeListener {
     public void changeInfoMsg(String pre, String state) {
         this.state.setText(state);
         this.preState.setText(pre);
+    }
+
+    public void setNeuralPathField(String path) {
+        this.neuralPathField.setText(path);
     }
 
 }
