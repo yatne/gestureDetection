@@ -95,42 +95,46 @@ public class PrincipalComponentAnalysis {
             throw new IllegalArgumentException("More components requested that the data's length.");
         if( sampleIndex != A.getNumRows() )
             throw new IllegalArgumentException("Not all the data has been added");
-        if( numComponents > sampleIndex )
-            throw new IllegalArgumentException("More data needed to compute the desired number of components");
+        try {
+            if (numComponents > sampleIndex)
+                throw new IllegalArgumentException("Za krótki gest");
 
-        this.numComponents = numComponents;
+            this.numComponents = numComponents;
 
-        // compute the mean of all the samples
-        for( int i = 0; i < A.getNumRows(); i++ ) {
-            for( int j = 0; j < mean.length; j++ ) {
-                mean[j] += A.get(i,j);
+            // compute the mean of all the samples
+            for (int i = 0; i < A.getNumRows(); i++) {
+                for (int j = 0; j < mean.length; j++) {
+                    mean[j] += A.get(i, j);
+                }
             }
-        }
-        for( int j = 0; j < mean.length; j++ ) {
-            mean[j] /= A.getNumRows();
-        }
-
-        // subtract the mean from the original data
-        for( int i = 0; i < A.getNumRows(); i++ ) {
-            for( int j = 0; j < mean.length; j++ ) {
-                A.set(i,j,A.get(i,j)-mean[j]);
+            for (int j = 0; j < mean.length; j++) {
+                mean[j] /= A.getNumRows();
             }
+
+            // subtract the mean from the original data
+            for (int i = 0; i < A.getNumRows(); i++) {
+                for (int j = 0; j < mean.length; j++) {
+                    A.set(i, j, A.get(i, j) - mean[j]);
+                }
+            }
+
+            // Compute SVD and save time by not computing U
+            SingularValueDecomposition<DenseMatrix64F> svd =
+                    DecompositionFactory.svd(A.numRows, A.numCols, false, true, false);
+            if (!svd.decompose(A))
+                throw new RuntimeException("SVD failed");
+
+            V_t = svd.getV(null, true);
+            DenseMatrix64F W = svd.getW(null);
+
+            // Singular values are in an arbitrary order initially
+            SingularOps.descendingOrder(null, false, W, V_t, true);
+
+            // strip off unneeded components and find the basis
+            V_t.reshape(numComponents, mean.length, true);
+        } catch (IllegalArgumentException e) {
+            System.out.println("Za krótki gest");
         }
-
-        // Compute SVD and save time by not computing U
-        SingularValueDecomposition<DenseMatrix64F> svd =
-                DecompositionFactory.svd(A.numRows, A.numCols, false, true, false);
-        if( !svd.decompose(A) )
-            throw new RuntimeException("SVD failed");
-
-        V_t = svd.getV(null,true);
-        DenseMatrix64F W = svd.getW(null);
-
-        // Singular values are in an arbitrary order initially
-        SingularOps.descendingOrder(null,false,W,V_t,true);
-
-        // strip off unneeded components and find the basis
-        V_t.reshape(numComponents,mean.length,true);
     }
 
     /**
