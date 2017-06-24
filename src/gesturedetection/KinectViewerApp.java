@@ -173,7 +173,14 @@ public class KinectViewerApp extends DWApp implements ChangeListener {
         Constants.REPETITIONS = Integer.parseInt(repetitionCount.getText());
         Constants.GESTURES_COUNT = Integer.parseInt(recordGesturesCount.getText());
         if (e.getSource() == learnGesturesButton) {
+            Constants.learn = true;
             myKinect.getMeasureRestScenario().activate();
+        } else if (e.getSource() == recogniseGesturesButton) {
+            Constants.neuralFileName = this.neuralPathField.getText();
+            Constants.learn = false;
+            myKinect.getMeasureRestScenario().activate();
+        } else if (e.getSource() == loadNeuralButton) {
+            Constants.neuralFileName = this.neuralPathField.getText();
         }
         if (e.getSource() == saveDataToFileButton) {
             if (myKinect.getSaveDataToFileScenario().isActive()) {

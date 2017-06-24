@@ -50,6 +50,8 @@ public class CalculatePcaScenario extends Scenario {
     }
 
     public String restart(boolean learn, String neuralNetworkBasePath) {
+        System.out.println(learn);
+        System.out.println(neuralNetworkBasePath);
         this.repetitionMax = Constants.REPETITIONS;
         this.gesturesMax = Constants.GESTURES_COUNT;
         this.currentRepetition = 1;
@@ -109,7 +111,7 @@ public class CalculatePcaScenario extends Scenario {
 
     private void logDoubles(double[] ds){
         for (double d : ds) {
-            System.out.print(d);
+            System.out.print((int) d + " ");
         }
         System.out.println();
     }

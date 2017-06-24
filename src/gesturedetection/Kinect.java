@@ -105,7 +105,7 @@ public class Kinect extends J4KSDK {
         if (measureRestScenario.isDone()) {
             thresholdFindScenario.activate(measureRestScenario.getAvgFrame());
             measureRestScenario.setDone(false);
-            String neuralPath = calculatePcaScenario.restart(true, Constants.neuralFileName);
+            String neuralPath = calculatePcaScenario.restart(Constants.learn, Constants.neuralFileName);
             app.setNeuralPathField(neuralPath);
         }
         if (thresholdFindScenario.isActive()) {

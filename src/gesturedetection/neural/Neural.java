@@ -38,8 +38,9 @@ public class Neural {
     }
 
     public Neural(String neuralFileName) {
-        neuralFileName = NETWORK_BASE_PATH + neuralFileName;
-        trainingDataFilePath = NETWORK_BASE_PATH + neuralFileName.replace("neural", "training");
+
+        trainingDataFilePath = neuralFileName.replace("neural", "training");
+        trainingDataFilePath = trainingDataFilePath.replace("nnet", "tset");
         System.out.println(neuralFileName);
         neuralNetwork = NeuralNetwork.load(neuralFileName);
         trainingData = DataSet.load(trainingDataFilePath);
